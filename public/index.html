@@ -10,36 +10,47 @@
     <title>Just MSKU</title>
 
     <style>
-        /* --- HEADER TASARIMI --- */
-        
-        /* Header genel kapsayıcı */
+        /* --- SIFIRLAMA --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #000; /* Arka plan siyah */
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* --- HEADER --- */
         header {
             width: 100%;
             background-color: #1a1a1a;
             padding: 15px 30px;
         }
 
-        /* Logo ve Linkleri tutan kutu */
         .login {
-            display: flex;             /* Esnek kutu yapısı */
-            justify-content: space-between; /* İki uca yasla */
-            align-items: center;       /* Dikeyde ortala */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        /* Linklerin listesi (ul) */
         .nav_links {
             list-style: none;
-            display: flex;             /* Linkleri yan yana diz */
-            gap: 25px;                 /* Linkler arası boşluk */
+            display: flex;
+            gap: 25px;
+            padding: 0;
         }
 
-        /* Linklerin kendisi (a) */
         .nav_links li a {
             text-decoration: none;
             color: #fff;
-            font-family: 'Montserrat', sans-serif;
             font-weight: 500;
             transition: color 0.3s ease;
+            white-space: nowrap;
         }
 
         .nav_links li a:hover {
@@ -49,7 +60,111 @@
         .logo h2 a {
             text-decoration: none;
             color: #24caac;
-            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* --- ANA SAYFA DÜZENİ --- */
+        #anasayfa {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 50px 30px;
+            overflow: hidden;
+        }
+
+        .inner_anasayfa {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1200px;
+            gap: 40px;
+        }
+
+        .child_anasayfa {
+            flex: 1;
+        }
+
+        /* --- BAŞLIK RENK VE STİL AYARLARI --- */
+        .child_anasayfa h1 {
+            font-size: 3rem;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            font-weight: 800; /* Kalın font */
+        }
+
+        /* "MSKU öğrencisi misin?" Rengi (Turkuaz/Yeşil) */
+        .text-green {
+            color: #24caac; /* Resimdeki yeşil tonu */
+            display: block; /* Alt alta gelmesini sağlar */
+        }
+
+        /* "Ne bekliyorsun?" Rengi (Koyu Mavi) */
+        .text-blue {
+            color: #0056b3; /* Resimdeki mavi tonu */
+            display: block; /* Alt alta gelmesini sağlar */
+        }
+
+        .child_anasayfa p {
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+            color: #ccc;
+        }
+
+        .inner_anasayfa img {
+            flex: 1;
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .btn {
+            padding: 15px 30px; /* Butonu biraz büyüttüm */
+            background-color: #fff; /* Resimdeki gibi beyaz arka plan */
+            border: none;
+            border-radius: 30px; /* Resimdeki gibi yuvarlak kenar */
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- RESPONSIVE AYARLAR --- */
+        @media (max-width: 1024px) {
+            .child_anasayfa h1 {
+                font-size: 2.5rem;
+            }
+            .inner_anasayfa {
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            .nav_links {
+                flex-direction: column;
+                gap: 15px;
+                width: 100%;
+            }
+            .inner_anasayfa {
+                flex-direction: column-reverse;
+                text-align: center;
+            }
+            .child_anasayfa {
+                width: 100%;
+            }
+            .child_anasayfa h1 {
+                font-size: 2rem;
+            }
+            .inner_anasayfa img {
+                max-width: 80%;
+                margin: 0 auto;
+            }
         }
     </style>
 
@@ -73,11 +188,17 @@
     <section id="anasayfa">
         <div class="inner_anasayfa">
             <div class="child_anasayfa">
-                <h1>MSKU öğrencisi misin? <br> <span class="span_child">Ne bekliyorsun?</span></h1>
+                <h1>
+                    <span class="text-green">MSKU <br> öğrencisi <br> misin?</span>
+                    <span class="text-blue">Ne <br> bekliyorsun?</span>
+                </h1>
                 <p>MSKU öğrencilerine özel alan</p>
-                <button class="btn"><a href="kayit.html" style="text-decoration: none; color: black;">Create An Account</a></button>
+                
+                <button class="btn">
+                    <a href="kayit.html" style="text-decoration: none; color: black; font-weight: bold; font-size: 1rem;">Create An Account</a>
+                </button>
             </div>
-            <div class="child_anasayfa"></div>
+            <div class="child_anasayfa" style="display:none;"></div>
             
             <img src="img/Mugla_Sitki_Kocman_University_logo_imtiyaz_31711e8adf.png" alt="">
         </div>
