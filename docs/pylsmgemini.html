@@ -6,6 +6,15 @@
     <title>Ana Sayfa - Just MSKU</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          // BURAYA KENDİ PUBLIC KEY'İNİ YAZ
+          emailjs.init("CYIIX3kfQyoPUedSP"); 
+       })();
+    </script>
+
     <style>
         /* --- GENEL AYARLAR --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -562,6 +571,17 @@
         </div>
     </div>
 
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color:#24caac; margin-bottom:15px;">Şikayet Et</h3>
+            <textarea id="reportReason" placeholder="Şikayet sebebiniz nedir?" style="width:100%; height:100px; background:#333; color:white; border:1px solid #444; padding:10px; border-radius:5px; outline:none; resize:none; margin-bottom:15px;"></textarea>
+            <div class="modal-buttons">
+                <button class="modal-btn" style="background:#444; color:white;" onclick="closeReportModal()">İptal</button>
+                <button class="modal-btn" style="background:#24caac; color:black;" onclick="submitReport()">Gönder</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function goToProfile(username) {
             window.location.href = 'takip.html?kisi=' + username;
@@ -569,10 +589,13 @@
     </script>
 
     <script type="module">
+        
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs, limit, doc, getDoc, setDoc, onSnapshot, addDoc, orderBy, deleteDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
 
+        
         // FIREBASE AYARLARI
         const firebaseConfig = {
             apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
@@ -586,6 +609,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        // --- BURAYA YAPIŞTIR ---
+    
         
         // DEĞİŞKENLER
         let myUser = null;
@@ -608,7 +633,7 @@
         let currentOpenedCommunityAdminId = null;
         let currentCommMediaType = 'image';
 
-        const defaultUserImg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
+        const defaultUserImg = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";;
 
         // OTURUM KONTROLÜ
         onAuthStateChanged(auth, async (user) => {
@@ -659,11 +684,11 @@
 
                 subscribeToRequests(user.uid);
                 loadSidebarLists(user.uid);
-                loadGlobalPosts(); 
+                loadTimeline(); 
                 loadExploreMixed(); 
                 loadCommunities();
 
-                // --- URL'DEN SOHBET YAKALAMA (YENİ EKLENEN KISIM) ---
+                // --- URL'DEN SOHBET YAKALAMA ---
                 const params = new URLSearchParams(window.location.search);
                 const chatTargetUid = params.get('chatUser');
 
@@ -1100,7 +1125,7 @@
             
             let menuContent = (post.uid === currentUserUid) ? 
                 `<div class="option-item" onclick="editGlobalPost('${postId}', '${post.text.replace(/'/g, "\\'")}')">Düzenle</div><div class="option-item danger" onclick="deleteGlobalPost('${postId}')">Sil</div>` : 
-                `<div class="option-item" onclick="alert('Bildirildi')">Bildir</div>`;
+                `<div class="option-item" onclick="openReportModal('${postId}')">Bildir</div>`;
             
             const adminLabel = (post.uid === currentOpenedCommunityAdminId) ? '<span style="color:#24caac;font-size:10px; background:rgba(36,202,172,0.1); padding:2px 4px; border-radius:3px;">YÖNETİCİ</span>' : '';
             let dateStr = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleDateString("tr-TR") : "Az önce";
@@ -1109,7 +1134,7 @@
             const html = `
             <div class="feed-post" id="${postId}" style="border: 1px solid #333;">
                 <div class="post-header">
-                    <div class="user-info-group">
+                    <div class="user-info-group" onclick="window.location.href='takip.html?kisi=${post.uid}'" style="cursor:pointer;">
                         <img src="${post.userImg}" style="width:35px;height:35px;border-radius:50%;">
                         <div>
                             <div style="display:flex; align-items:center; gap:5px;"><strong>${post.username}</strong> ${adminLabel}</div>
@@ -1120,7 +1145,7 @@
                         <button class="options-btn" onclick="toggleMenu('cmenu-${postId}')"><i class="fa-solid fa-ellipsis"></i></button>
                         <div id="cmenu-${postId}" class="options-menu">
                             <div class="option-item" onclick="toggleLike('${postId}')">${likeText}</div>
-                            ${menuOptions}
+                            ${menuContent}
                         </div>
                     </div>
                 </div>
@@ -1202,59 +1227,135 @@
             currentCommMediaType = 'image'; 
         }
 
-        function loadExploreMixed() { 
-            const qPosts = query(collection(db, "posts"), orderBy("timestamp", "desc"), limit(20)); 
-            onSnapshot(qPosts, (snap) => { 
-                explorePostData = []; 
-                snap.forEach(doc => { 
-                    const data = doc.data(); 
-                    data.id = doc.id; 
-                    data.typeSrc = 'post'; 
-                    if (data.image || data.mediaUrl) explorePostData.push(data); 
-                }); 
-                renderExploreGrid(); 
-            }); 
+        // GÜNCELLENMİŞ KEŞFET YÜKLEME (Takip Edilenler Dahil)
+        async function loadExploreMixed() { 
+            // 1. Önce Takip Ettiklerimi Bul (Status: 'accepted')
+            let friendUids = [];
+            if (currentUserUid) {
+                const qRel = query(
+                    collection(db, "relationships"), 
+                    where("followerUid", "==", currentUserUid),
+                    where("status", "==", "accepted")
+                );
+                const relSnap = await getDocs(qRel);
+                relSnap.forEach(doc => friendUids.push(doc.data().followingUid));
+            }
+
+            // 2. Sorguları Hazırla
+            const promises = [];
             
-            const qNews = query(collection(db, "news"), orderBy("timestamp", "desc"), limit(20)); 
-            onSnapshot(qNews, (snap) => { 
-                exploreNewsData = []; 
-                snap.forEach(doc => { 
-                    const data = doc.data(); 
-                    data.id = doc.id; 
-                    data.typeSrc = 'news'; 
-                    window.newsDataCache[data.id] = data; 
-                    if (data.image) exploreNewsData.push(data); 
-                }); 
-                renderExploreGrid(); 
-            }); 
+            // A) Global Postlar (Son 20)
+            promises.push(getDocs(query(collection(db, "posts"), orderBy("timestamp", "desc"), limit(20))));
+            
+            // B) Haberler (Son 20)
+            promises.push(getDocs(query(collection(db, "news"), orderBy("timestamp", "desc"), limit(20))));
+
+            // C) Arkadaş Postları (Eğer arkadaşın varsa)
+            if (friendUids.length > 0) {
+                // Firestore 'IN' sorgusu en fazla 10 eleman alır, bu yüzden son 10 arkadaşı alıyoruz
+                // (Daha fazlası için chunking gerekir ama bu proje için yeterli)
+                const limitedFriends = friendUids.slice(0, 10); 
+                promises.push(getDocs(query(collection(db, "posts"), where("uid", "in", limitedFriends), orderBy("timestamp", "desc"), limit(10))));
+            }
+
+            // 3. Tüm Verileri Çek
+            const results = await Promise.all(promises);
+            const globalSnap = results[0];
+            const newsSnap = results[1];
+            const friendsSnap = (friendUids.length > 0) ? results[2] : null;
+
+            // 4. Verileri İşle ve Birleştir
+            explorePostData = [];
+            exploreNewsData = [];
+            const addedIds = new Set(); // Aynı postu iki kere eklememek için (hem globalde hem arkadaşta olabilir)
+
+            // Arkadaş Postlarını Ekle (Öncelikli)
+            if (friendsSnap) {
+                friendsSnap.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    data.typeSrc = 'post';
+                    // Sadece medyası olanları keşfete ekle
+                    if ((data.image || data.mediaUrl) && !addedIds.has(data.id)) { 
+                        explorePostData.push(data);
+                        addedIds.add(data.id);
+                    }
+                });
+            }
+
+            // Global Postları Ekle
+            globalSnap.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                data.typeSrc = 'post';
+                if ((data.image || data.mediaUrl) && !addedIds.has(data.id)) { 
+                    explorePostData.push(data);
+                    addedIds.add(data.id);
+                }
+            });
+
+            // Haberleri Ekle
+            newsSnap.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                data.typeSrc = 'news';
+                window.newsDataCache[data.id] = data;
+                if (data.image) exploreNewsData.push(data);
+            });
+
+            // 5. Grid'i Oluştur
+            renderExploreGrid(); 
         }
 
         function renderExploreGrid() { 
             const grid = document.querySelector('.explore-grid'); 
+            // Postlar ve Haberleri birleştir
             let combined = [...explorePostData, ...exploreNewsData]; 
+            
+            // Tarihe göre yeniden eskiye sırala
             combined.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); 
+            
             grid.innerHTML = ''; 
-            if (combined.length === 0) { grid.innerHTML = '<div class="empty-msg">Henüz içerik yok.</div>'; return; } 
+            
+            if (combined.length === 0) { 
+                grid.innerHTML = '<div class="empty-msg">Henüz içerik yok.</div>'; 
+                return; 
+            } 
             
             combined.forEach(item => { 
                 let content = ''; 
                 let clickAction = ''; 
                 let badge = ''; 
+                
+                // --- HABER İSE ---
                 if (item.typeSrc === 'news') { 
                     if (item.type === 'video') { 
                         content = `<video src="${item.image}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>`; 
                     } else { 
                         content = `<img src="${item.image}">`; 
                     } 
+                    // Yeşil Etiket
                     badge = `<div class="news-badge">HABER</div>`; 
                     clickAction = `viewNews('${item.id}')`; 
+                
+                // --- NORMAL GÖNDERİ VEYA TOPLULUK GÖNDERİSİ İSE ---
                 } else { 
                     if (item.type === 'video') { 
                         content = `<video src="${item.mediaUrl}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>`; 
                     } else { 
                         content = `<img src="${item.image || item.mediaUrl}">`; 
                     } 
+
+                    // Normal gönderi tıklandığında ana sayfada o gönderiye gitmeli
+                    clickAction = `goToPost('${item.id}')`;
+
+                    // EĞER TOPLULUK ID'Sİ VARSA ETİKET EKLE
+                    if (item.communityId) {
+                        // Turuncu Etiket
+                        badge = `<div class="news-badge" style="background: #ff9800; color: #000;">TOPLULUK</div>`;
+                    }
                 } 
+                
                 const div = document.createElement('div'); 
                 div.className = 'explore-item'; 
                 if(clickAction) div.setAttribute('onclick', clickAction); 
@@ -1350,10 +1451,10 @@
         async function loadSidebarLists(currentUid) { 
             const followersListDiv = document.getElementById('followersList'); 
             const contactsListDiv = document.getElementById('contactsList'); 
+            const mobileContactsDiv = document.getElementById('mobileContactsInner'); 
             const shareListDiv = document.getElementById('shareModalList'); 
             const countSpan = document.getElementById('sidebarFollowerCount'); 
             
-            // YENİ: Chat sayfasındaki ana liste
             const chatPageListDiv = document.getElementById('chatPageContactList');
             
             const q = query(collection(db, "relationships"), where("followingUid", "==", currentUid)); 
@@ -1363,12 +1464,13 @@
             followersListDiv.innerHTML = ''; 
             contactsListDiv.innerHTML = ''; 
             shareListDiv.innerHTML = ''; 
-            if(chatPageListDiv) chatPageListDiv.innerHTML = ''; // Listeyi temizle
+            if(chatPageListDiv) chatPageListDiv.innerHTML = '';
 
             if (snapshot.empty) { 
                 const emptyHtml = '<div style="color:#888;padding:10px;text-align:center;">Kimse yok.</div>';
                 followersListDiv.innerHTML = emptyHtml; 
                 contactsListDiv.innerHTML = emptyHtml; 
+                if(mobileContactsDiv) mobileContactsDiv.innerHTML = emptyHtml;
                 if(chatPageListDiv) chatPageListDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Henüz mesajlaşacak kimse yok.<br>Birilerini takip etmeye başla!</div>';
                 return; 
             } 
@@ -1383,10 +1485,15 @@
                     // Sidebar Takipçi Listesi
                     followersListDiv.insertAdjacentHTML('beforeend', `<div class="friend-row" onclick="goToProfile('${rel.followerUid}')" style="cursor:pointer;"><div class="friend-info"><img src="${uImg}"><span>${uData.username}</span></div><button class="remove-follow-btn" onclick="removeFollower('${docSnap.id}')" style="background:none; border:none; color:#ff4b4b; cursor:pointer;">Çıkar</button></div>`); 
                     
-                    // Sidebar Hızlı Mesaj (Contacts)
+                    // Sidebar Hızlı Mesaj
                     contactsListDiv.insertAdjacentHTML('beforeend', `<div class="friend-row" onclick="loadChat('${uData.username}', '${uImg}', '${rel.followerUid}')" style="cursor:pointer;"><div class="friend-info"><div style="position:relative;"><img src="${uImg}"><div style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#24caac;border-radius:50%;"></div></div><div><div style="font-size:14px;">${uData.username}</div><div style="font-size:11px;color:#888;">Çevrimiçi</div></div></div><i class="fa-regular fa-paper-plane" style="color:#666;"></i></div>`); 
                     
-                    // YENİ: Chat Sayfası Ana Listesi (Büyük Liste)
+                    // Mobil Chat Listesi
+                    if(mobileContactsDiv) {
+                        mobileContactsDiv.insertAdjacentHTML('beforeend', `<div class="friend-row" onclick="loadChat('${uData.username}', '${uImg}', '${rel.followerUid}')" style="cursor:pointer; padding:10px; background:#222; margin-bottom:5px; border-radius:8px;"><div class="friend-info"><img src="${uImg}"><span>${uData.username}</span></div><i class="fa-solid fa-comment-dots" style="color:#24caac;"></i></div>`);
+                    }
+
+                    // Chat Sayfası Ana Listesi
                     if(chatPageListDiv) {
                         chatPageListDiv.insertAdjacentHTML('beforeend', `
                             <div class="friend-row" onclick="loadChat('${uData.username}', '${uImg}', '${rel.followerUid}')" style="cursor:pointer; padding:15px; background:#222; margin-bottom:10px; border-radius:10px; border:1px solid #333;">
@@ -1411,25 +1518,41 @@
         function getChatRoomId(uid1, uid2) { return [uid1, uid2].sort().join("_"); }
         
         window.loadChat = function(name, imgUrl, targetUid) { 
-            // 1. Ekranları Değiştir (Listeyi Gizle, Sohbeti Aç)
+            // 1. Ekranları Değiştir
             document.getElementById('chatContactListScreen').style.display = 'none';
             document.getElementById('activeChatScreen').style.display = 'flex';
 
             // 2. Başlık Bilgilerini Güncelle
-            document.getElementById('chatHeaderName').innerText = name; 
-            document.getElementById('chatHeaderImg').src = imgUrl; 
+            const nameEl = document.getElementById('chatHeaderName');
+            const imgEl = document.getElementById('chatHeaderImg');
+            
+            nameEl.innerText = name; 
+            imgEl.src = imgUrl; 
+
+            // --- YENİ: BAŞLIĞA TIKLAYINCA PROFİLE GİT ---
+            const goToProfile = () => {
+                window.location.href = 'takip.html?kisi=' + targetUid;
+            };
+            
+            // İsme ve Resme tıklama özelliği ver
+            nameEl.onclick = goToProfile;
+            nameEl.style.cursor = 'pointer'; // Tıklanabilir olduğunu göster (el işareti)
+            
+            imgEl.onclick = goToProfile;
+            imgEl.style.cursor = 'pointer';
+            // ---------------------------------------------
             
             // 3. Değişkenleri Ayarla
             currentChatPartnerUid = targetUid; 
             cancelReply(); 
             
-            // 4. Eski dinleyiciyi durdur (Önceki sohbetle bağını kopar)
+            // 4. Eski dinleyiciyi durdur
             if (activeChatUnsubscribe) {
                 activeChatUnsubscribe();
                 activeChatUnsubscribe = null;
             }
 
-            // 5. Mesaj Kutusunu TEMİZLE (Yeni pencere hissi için)
+            // 5. Mesaj Kutusunu TEMİZLE
             const chatBox = document.getElementById('chatBox'); 
             chatBox.innerHTML = '<div style="text-align:center; color:#555; margin-top:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Mesajlar yükleniyor...</div>';
 
@@ -1438,7 +1561,7 @@
             const q = query(collection(db, "chats", roomId, "messages"), orderBy("timestamp", "asc")); 
             
             activeChatUnsubscribe = onSnapshot(q, (snapshot) => { 
-                chatBox.innerHTML = ''; // Yükleniyor yazısını kaldır
+                chatBox.innerHTML = ''; 
                 
                 if(snapshot.empty) { 
                     chatBox.innerHTML = '<div style="text-align:center;color:#555;margin-top:20px;">Burada henüz mesaj yok.<br>İlk mesajı sen at! 👋</div>'; 
@@ -1588,16 +1711,56 @@
             document.querySelectorAll('.msg-menu').forEach(m => m.classList.remove('active')); 
         }
         
-        function loadGlobalPosts() { 
+        // ESKİ loadGlobalPosts YERİNE BUNU KULLANACAĞIZ
+        async function loadTimeline() { 
             const feed = document.getElementById('feedContainer'); 
-            const q = query(collection(db, "posts"), orderBy("timestamp", "desc")); 
-            onSnapshot(q, (snapshot) => { 
+            
+            // 1. Adım: Takip ettiğim kişilerin listesini al (Status: 'accepted' olanlar)
+            const qRel = query(
+                collection(db, "relationships"), 
+                where("followerUid", "==", currentUserUid),
+                where("status", "==", "accepted")
+            );
+            
+            const relSnap = await getDocs(qRel);
+            
+            // İzin verilenler listesi (Başta sadece BEN varım)
+            let allowedUids = [currentUserUid]; 
+            
+            // Takip ettiklerimi listeye ekle
+            relSnap.forEach(doc => {
+                allowedUids.push(doc.data().followingUid);
+            });
+
+            // 2. Adım: Gönderileri Çek ve Filtrele
+            // Not: Firestore 'IN' sorgusu 30 ile sınırlı olduğu için client-side filtreleme yapıyoruz.
+            const qPosts = query(collection(db, "posts"), orderBy("timestamp", "desc"), limit(50)); 
+            
+            onSnapshot(qPosts, (snapshot) => { 
                 feed.innerHTML = ''; 
+                
                 if(snapshot.empty) { 
                     feed.innerHTML = '<div class="empty-msg">Henüz akışta gönderi yok.</div>'; 
-                } else { 
-                    snapshot.forEach(doc => createPostHTML(doc.id, doc.data())); 
+                    return;
                 } 
+
+                let hasContent = false;
+
+                snapshot.forEach(doc => { 
+                    const post = doc.data();
+                    
+                    // --- İŞTE SİHİRLİ KISIM ---
+                    // Eğer gönderiyi atan kişi (post.uid), benim izinli listem (allowedUids) içindeyse göster
+                    if (allowedUids.includes(post.uid)) {
+                        createPostHTML(doc.id, post);
+                        hasContent = true;
+                    }
+                });
+                
+                // Eğer takip ettiğim kimse gönderi atmamışsa
+                if (!hasContent) {
+                     feed.innerHTML = '<div class="empty-msg" style="text-align:center; padding:20px; color:#888;">Akışın boş.<br>Birilerini takip et veya bir şeyler paylaş!</div>';
+                }
             }); 
         }
 
@@ -1622,7 +1785,7 @@
             if (auth.currentUser && post.uid === auth.currentUser.uid) { 
                 menuOptions = `<div class="option-item" onclick="editGlobalPost('${postId}', '${post.text.replace(/'/g, "\\'")}')">Düzenle</div><div class="option-item danger" onclick="deleteGlobalPost('${postId}')">Sil</div>`; 
             } else { 
-                menuOptions = `<div class="option-item" onclick="alert('Raporlandı')">Bildir</div><div class="option-item" onclick="document.getElementById('${postId}').style.display='none'">Gizle</div>`; 
+                menuOptions = `<div class="option-item" onclick="openReportModal('${postId}')">Bildir</div><div class="option-item" onclick="document.getElementById('${postId}').style.display='none'">Gizle</div>`; 
             }
             
             const liked = (post.likedBy && post.likedBy.includes(auth.currentUser.uid)); 
@@ -1633,13 +1796,14 @@
             
             newPostDiv.innerHTML = `
             <div class="post-header">
-                <div class="user-info-group">
+                <div class="user-info-group" onclick="window.location.href='takip.html?kisi=${post.uid}'" style="cursor:pointer;">
                     <img src="${userImg}">
                     <div>
                         <strong>${post.username}</strong>
                         <div style="font-size:12px;color:#888;">${dateStr}</div>
                     </div>
                 </div>
+                
                 <div class="post-options">
                     <button class="options-btn" onclick="toggleMenu('menu-${postId}')"><i class="fa-solid fa-ellipsis"></i></button>
                     <div id="menu-${postId}" class="options-menu">
@@ -1853,7 +2017,75 @@
         window.closeModal = () => document.getElementById('noteModal').style.display='none';
         window.openCommModal = () => document.getElementById('commModal').style.display='flex';
         window.closeCommModal = () => document.getElementById('commModal').style.display='none';
+        window.openReportModal = (id) => { currentReportPostId = id; document.getElementById('reportModal').style.display='flex'; }
+        window.closeReportModal = () => { document.getElementById('reportModal').style.display='none'; currentReportPostId = null; }
         
+        // ŞİKAYET GÖNDERME FONKSİYONU (DÜZELTİLMİŞ)
+        let currentReportPostId = null;
+        // 3. Şikayeti Gönder (Güncellenmiş: Link Eklemeli)
+        window.submitReport = async () => {
+            const reason = document.getElementById('reportReason').value.trim();
+            if(!reason) return alert("Lütfen bir sebep yazınız.");
+            
+            const btn = document.querySelector('#reportModal .modal-buttons button:last-child');
+            btn.innerText = "Gönderiliyor...";
+            btn.disabled = true;
+
+            try {
+                // A) Şikayet edilen gönderinin detaylarını çek
+                const postRef = doc(db, "posts", currentReportPostId);
+                const postSnap = await getDoc(postRef);
+                
+                let postOwner = "Bilinmiyor";
+                let postContent = "İçerik Yok/Medya";
+
+                if (postSnap.exists()) {
+                    const p = postSnap.data();
+                    postOwner = p.username;
+                    postContent = p.text ? p.text.substring(0, 50) + "..." : "Sadece Görsel/Video";
+                }
+
+                // --- YENİ: DİREKT LİNK OLUŞTURMA ---
+                // Mevcut sayfa adresini al (örn: https://siten.com/pylsmgemini.html)
+                const baseUrl = window.location.href.split('?')[0]; 
+                // Sonuna parametre ekle
+                const postLink = `${baseUrl}?openPost=${currentReportPostId}`;
+
+                // B) Veritabanına Rapor Olarak Kaydet
+                await addDoc(collection(db, "reports"), {
+                    postId: currentReportPostId,
+                    reason: reason,
+                    reportedBy: myUser.uid,
+                    reporterName: myUser.username,
+                    timestamp: serverTimestamp()
+                });
+
+                // C) SANA MAIL ATMA KISMI (EmailJS)
+                const templateParams = {
+                    reporter_name: myUser.username,
+                    reason: reason,
+                    post_id: currentReportPostId,
+                    post_owner: postOwner,
+                    post_content: postContent,
+                    post_link: postLink // <--- YENİ EKLENEN LİNK
+                };
+
+                // ID'LERİNİ BURAYA YAZMAYI UNUTMA
+                await emailjs.send('service_7an2b0g', 'template_afv7n7t', templateParams);
+
+                alert("Bildiriminiz yöneticiye iletildi.");
+                closeReportModal();
+
+            } catch (error) {
+                console.error("Rapor hatası:", error);
+                alert("Rapor kaydedildi ancak mail sunucusunda hata oluştu.");
+                closeReportModal();
+            } finally {
+                btn.innerText = "Gönder";
+                btn.disabled = false;
+            }
+        }
+
         window.createCommunity = async () => { 
             const n = document.getElementById('cName').value; 
             const d = document.getElementById('cDesc').value; 
@@ -1938,6 +2170,7 @@
             if(e.target.id === 'noteModal') closeModal();
             if(e.target.id === 'commModal') closeCommModal();
             if(e.target.id === 'newsDetailModal') closeNewsDetailModal();
+            if(e.target.id === 'reportModal') closeReportModal();
         }
         window.closeActiveChat = function() {
             // Sohbeti gizle, Listeyi göster
@@ -1951,6 +2184,27 @@
             }
             currentChatPartnerUid = null;
         }
+        // --- SAYFA YÜKLENDİĞİNDE LİNKLERİ KONTROL ET ---
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            
+            // 1. Şikayet Edilen Gönderiyi Açma Kontrolü
+            const openPostId = params.get('openPost');
+            if (openPostId) {
+                // Sayfa ve veriler yüklenene kadar biraz bekleyelim (2 saniye)
+                setTimeout(() => {
+                    goToPost(openPostId);
+                    // URL'yi temizle ki sayfa yenilenince tekrar gitmesin
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }, 2000);
+            }
+
+            // 2. Sohbet Açma Kontrolü (Zaten vardı, koruyoruz)
+            const chatUserUid = params.get('chatUser');
+            if (chatUserUid) {
+                // (Mevcut sohbet açma kodun burada çalışır, çakışmaz)
+            }
+        });
     </script>
 </body>
 </html>

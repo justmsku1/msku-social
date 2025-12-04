@@ -273,7 +273,7 @@
                     document.getElementById('profileNameDisplay').innerText = myUser.username || "Kullanıcı";
                     
                     loadProfileData();
-                    checkFollowRequests(); // İstekleri dinle
+                    checkFollowRequests(); // İSTEKLERİ BURADA ÇAĞIRIYORUZ (DOĞRU)
                 }
                 loadMyPosts(); 
                 updateStats(user.uid);
@@ -299,7 +299,6 @@
 
         // --- 2. GİZLİ HESAP & İSTEKLER ---
         
-        // Gizlilik Ayarını Değiştir
         window.togglePrivateAccount = async function() {
             const toggle = document.getElementById('privateAccountToggle');
             const isPrivate = toggle.checked;
@@ -312,13 +311,13 @@
             }
         }
 
-        // Bekleyen İstek Sayısını Dinle (Status: 'pending')
+        // --- İSTEKLERİ DİNLEME (DÜZELTİLEN KISIM) ---
         function checkFollowRequests() {
-            // Relationships tablosunda BANA gelen (followingUid == ben) ve durumu PENDING olanlar
+            // SADECE 'friendRequests' TABLOSUNA BAKIYORUZ
+            // Şart: toUid == BENİM ID'M
             const q = query(
-                collection(db, "relationships"), 
-                where("followingUid", "==", currentUserUid),
-                where("status", "==", "pending")
+                collection(db, "friendRequests"), 
+                where("toUid", "==", currentUserUid)
             );
 
             onSnapshot(q, (snap) => {
@@ -332,17 +331,16 @@
             });
         }
 
-        // İstekler Modalını Aç ve Listele
+        // --- İSTEK LİSTESİNİ AÇMA (DÜZELTİLEN KISIM) ---
         window.openRequestsModal = async function() {
             document.getElementById('requestsModal').style.display = 'flex';
             const listDiv = document.getElementById('requestsList');
             listDiv.innerHTML = '<div class="empty-msg">Yükleniyor...</div>';
 
-            // Sorgu: Bana gelen ve durumu 'pending' olanlar
+            // friendRequests tablosundan çekiyoruz
             const q = query(
-                collection(db, "relationships"), 
-                where("followingUid", "==", currentUserUid),
-                where("status", "==", "pending")
+                collection(db, "friendRequests"), 
+                where("toUid", "==", currentUserUid)
             );
             
             const snap = await getDocs(q);
@@ -354,24 +352,25 @@
             }
 
             snap.forEach(async (d) => {
-                const rel = d.data();
-                const relId = d.id;
+                const reqData = d.data();
+                const reqId = d.id;
+                const requesterUid = reqData.fromUid; // İstek gönderen kişinin ID'si
                 
-                // İstek gönderen kullanıcının bilgilerini çek
-                const uDoc = await getDoc(doc(db, "users", rel.followerUid));
+                const uDoc = await getDoc(doc(db, "users", requesterUid));
                 if(uDoc.exists()) {
                     const uData = uDoc.data();
                     const uImg = uData.photoURL || defaultAvatar;
 
+                    // HTML oluştururken processRequest'e requesterUid parametresini de gönderiyoruz
                     listDiv.innerHTML += `
-                        <div class="request-list-item" id="req-${relId}">
-                            <div class="user-list-info" onclick="window.location.href='takip.html?kisi=${rel.followerUid}'">
+                        <div class="request-list-item" id="req-${reqId}">
+                            <div class="user-list-info" onclick="window.location.href='takip.html?kisi=${requesterUid}'">
                                 <img src="${uImg}">
                                 <div style="font-weight:600; font-size:14px; text-align:left;">${uData.username}</div>
                             </div>
                             <div class="req-actions">
-                                <button class="req-btn req-accept" onclick="processRequest('${relId}', true)">Onayla</button>
-                                <button class="req-btn req-reject" onclick="processRequest('${relId}', false)">Reddet</button>
+                                <button class="req-btn req-accept" onclick="processRequest('${reqId}', '${requesterUid}', true)">Onayla</button>
+                                <button class="req-btn req-reject" onclick="processRequest('${reqId}', '${requesterUid}', false)">Reddet</button>
                             </div>
                         </div>
                     `;
@@ -379,25 +378,27 @@
             });
         }
 
-        // İsteği İşle (Onayla veya Reddet)
-        window.processRequest = async function(relId, isAccepted) {
-            const item = document.getElementById(`req-${relId}`);
+        // --- İSTEĞİ İŞLEME (DÜZELTİLEN KISIM) ---
+        window.processRequest = async function(reqId, requesterUid, isAccepted) {
+            const item = document.getElementById(`req-${reqId}`);
             if(item) item.style.opacity = '0.5';
 
             try {
                 if (isAccepted) {
-                    // KABUL ET: Durumu 'pending' -> 'accepted' yap
-                    await updateDoc(doc(db, "relationships", relId), {
-                        status: 'accepted'
+                    // KABUL EDİLDİYSE: relationships tablosuna YENİ KAYIT ekle
+                    await addDoc(collection(db, "relationships"), {
+                        followerUid: requesterUid, // O beni takip ediyor
+                        followingUid: currentUserUid, // Ben onu kabul ettim
+                        status: 'accepted',
+                        timestamp: serverTimestamp()
                     });
-                    // Listeden kaldır
-                    if(item) item.remove();
-                    updateStats(currentUserUid); // Takipçi sayısı artar
-                } else {
-                    // REDDET: İlişkiyi tamamen sil
-                    await deleteDoc(doc(db, "relationships", relId));
-                    if(item) item.remove();
-                }
+                    updateStats(currentUserUid); // Takipçi sayısını artır
+                } 
+                
+                // HER İKİ DURUMDA DA: friendRequests tablosundan sil
+                await deleteDoc(doc(db, "friendRequests", reqId));
+                
+                if(item) item.remove();
 
                 // Liste boşaldı mı kontrol et
                 const listDiv = document.getElementById('requestsList');
@@ -412,15 +413,12 @@
             }
         }
 
-
-        // --- 3. İSTATİSTİKLER (Sadece 'accepted' olanlar) ---
+        // --- 3. İSTATİSTİKLER ---
         async function updateStats(uid) {
-            // Gönderi Sayısı
             const qPosts = query(collection(db, "posts"), where("uid", "==", uid));
             const sPosts = await getDocs(qPosts);
             document.getElementById('statPostCount').innerText = sPosts.size;
 
-            // Takipçi Sayısı (Durumu 'accepted' olanlar)
             const qFollowers = query(
                 collection(db, "relationships"), 
                 where("followingUid", "==", uid),
@@ -429,7 +427,6 @@
             const sFollowers = await getDocs(qFollowers);
             document.getElementById('statFollowerCount').innerText = sFollowers.size;
 
-            // Takip Edilen Sayısı (Durumu 'accepted' olanlar)
             const qFollowing = query(
                 collection(db, "relationships"), 
                 where("followerUid", "==", uid),
@@ -451,21 +448,19 @@
             if (tabName === 'following') loadLists('following');
         }
 
-        // --- 5. LİSTE YÜKLEME (Sadece 'accepted' olanlar) ---
+        // --- 5. LİSTE YÜKLEME ---
         async function loadLists(type) {
             const container = document.getElementById(type + 'ListContainer');
             container.innerHTML = '<div class="empty-msg">Yükleniyor...</div>';
 
             let q;
             if (type === 'followers') {
-                // Beni takip edenler (Accepted)
                 q = query(
                     collection(db, "relationships"), 
                     where("followingUid", "==", currentUserUid),
                     where("status", "==", "accepted")
                 );
             } else {
-                // Benim takip ettiklerim (Accepted)
                 q = query(
                     collection(db, "relationships"), 
                     where("followerUid", "==", currentUserUid),
@@ -483,8 +478,6 @@
 
             snapshot.forEach(async (docSnap) => {
                 const rel = docSnap.data();
-                // Eğer followers listesindeysem bana 'followerUid' (takip eden kişi) lazım
-                // Eğer following listesindeysem bana 'followingUid' (takip ettiğim kişi) lazım
                 const targetUid = type === 'followers' ? rel.followerUid : rel.followingUid;
                 
                 const userDoc = await getDoc(doc(db, "users", targetUid));
@@ -581,7 +574,7 @@
                 
                 <div class="post-actions">
                     <div class="action-btn ${likeClass}" onclick="toggleLike('${postId}')"><i class="${likeIcon} fa-heart"></i> <span>${post.likes || 0}</span></div>
-                    <div class="action-btn" onclick="openShareModal('${postId}')"><i class="fa-solid fa-share"></i> Paylaş</div>
+                    <div class="action-btn" onclick="openShareModal('${postId}')"><i class="fa-solid fa-share-nodes"></i> Paylaş</div>
                 </div>
             `;
             

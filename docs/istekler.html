@@ -6,6 +6,7 @@
     <title>İstekler - Just MSKU</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* --- STİLLER (AYNI) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
         body { background-color: #000; color: #fff; display: flex; flex-direction: column; min-height: 100vh; }
         
@@ -52,7 +53,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, updateDoc, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
@@ -68,24 +69,27 @@
         const db = getFirestore(app);
         const defaultAvatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
 
+        let currentUserUid = null;
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                currentUserUid = user.uid;
                 loadRequests(user.uid);
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        // İSTEKLERİ ÇEKME FONKSİYONU
+        // --- İSTEKLERİ ÇEKME FONKSİYONU (DÜZELTİLDİ) ---
         async function loadRequests(myUid) {
             const container = document.getElementById('requestsContainer');
             const emptyState = document.getElementById('emptyState');
             
-            // DİKKAT: 'relationships' koleksiyonunda BANA (followingUid) gelen ve DURUMU 'pending' olanları çekiyoruz.
+            // DÜZELTME: Artık 'friendRequests' koleksiyonuna bakıyoruz.
+            // 'toUid' alanı BENİM ID'm olmalı.
             const q = query(
-                collection(db, "relationships"), 
-                where("followingUid", "==", myUid),
-                where("status", "==", "pending")
+                collection(db, "friendRequests"), 
+                where("toUid", "==", myUid)
             );
             
             try {
@@ -100,14 +104,12 @@
                     emptyState.style.display = 'none';
                     document.getElementById('reqCount').innerText = `(${querySnapshot.size})`;
                     
-                    // Her bir istek için döngüye gir
-                    // map ile tüm istekleri paralel olarak işleyelim (Daha hızlı yüklenir)
                     const promises = querySnapshot.docs.map(async (docSnap) => {
-                        const relData = docSnap.data();
-                        const relId = docSnap.id;
-                        const requesterUid = relData.followerUid; // İsteği gönderen kişi
+                        const reqData = docSnap.data();
+                        const reqId = docSnap.id;
+                        const requesterUid = reqData.fromUid; // İstek gönderen kişi
 
-                        // İsteği gönderen kişinin Profil Bilgilerini 'users' tablosundan çek
+                        // Kullanıcı bilgisini çek
                         const userDoc = await getDoc(doc(db, "users", requesterUid));
                         
                         let userName = "Bilinmeyen Kullanıcı";
@@ -121,9 +123,9 @@
                             userBio = userData.bio || userBio;
                         }
 
-                        // Kartı oluştur
+                        // Kartı oluştur (Onayla fonksiyonuna parametre olarak requesterUid de gönderiyoruz)
                         return `
-                            <div class="request-card" id="card-${relId}">
+                            <div class="request-card" id="card-${reqId}">
                                 <div class="user-info" onclick="window.location.href='takip.html?kisi=${requesterUid}'">
                                     <img src="${userImg}" alt="User">
                                     <div>
@@ -132,14 +134,13 @@
                                     </div>
                                 </div>
                                 <div class="btn-group">
-                                    <button class="btn btn-accept" onclick="processRequest('${relId}', true)">Onayla</button>
-                                    <button class="btn btn-reject" onclick="processRequest('${relId}', false)">Sil</button>
+                                    <button class="btn btn-accept" onclick="processRequest('${reqId}', '${requesterUid}', true)">Onayla</button>
+                                    <button class="btn btn-reject" onclick="processRequest('${reqId}', '${requesterUid}', false)">Sil</button>
                                 </div>
                             </div>
                         `;
                     });
 
-                    // Tüm veriler çekilip HTML oluşturulana kadar bekle
                     const htmlArray = await Promise.all(promises);
                     container.innerHTML = htmlArray.join('');
                 }
@@ -149,27 +150,30 @@
             }
         }
 
-        // KABUL ET / REDDET FONKSİYONU
-        window.processRequest = async function(docId, isAccepted) {
-            const card = document.getElementById(`card-${docId}`);
-            if(card) card.style.opacity = "0.5"; // İşlem yapıldığını belli et
+        // --- KABUL ET / REDDET FONKSİYONU (GÜNCELLENDİ) ---
+        window.processRequest = async function(reqId, requesterUid, isAccepted) {
+            const card = document.getElementById(`card-${reqId}`);
+            if(card) card.style.opacity = "0.5"; 
 
             try {
-                const relRef = doc(db, "relationships", docId);
-
                 if (isAccepted) {
-                    // Onayla: Durumu 'pending' -> 'accepted' yap
-                    await updateDoc(relRef, {
-                        status: 'accepted'
+                    // KABUL EDİLİNCE:
+                    // 1. 'relationships' koleksiyonuna YENİ kayıt ekle (status: accepted)
+                    await addDoc(collection(db, "relationships"), {
+                        followerUid: requesterUid, // O beni takip ediyor
+                        followingUid: currentUserUid, // Ben takip ediliyorum
+                        status: 'accepted',
+                        timestamp: serverTimestamp()
                     });
-                    console.log("İstek onaylandı.");
-                } else {
-                    // Reddet: Dokümanı sil
-                    await deleteDoc(relRef);
-                    console.log("İstek silindi.");
-                }
+                    console.log("İstek onaylandı ve ilişki oluşturuldu.");
+                } 
+                
+                // HER İKİ DURUMDA DA (Onayla veya Reddet):
+                // 'friendRequests' koleksiyonundaki isteği SİL
+                await deleteDoc(doc(db, "friendRequests", reqId));
+                console.log("İstek silindi.");
 
-                // Kartı kaldır
+                // Kartı UI'dan kaldır
                 if(card) {
                     card.remove();
                     
@@ -181,7 +185,6 @@
                         countSpan.innerText = `(${currentCount})`;
                     }
                     
-                    // Hepsi bittiyse boş durumu göster
                     if(document.querySelectorAll('.request-card').length === 0) {
                         document.getElementById('emptyState').style.display = 'block';
                     }

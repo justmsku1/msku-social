@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Profili - Just MSKU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- GENEL AYARLAR --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body { background-color: #000; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* HEADER */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: #1a1a1a; border-bottom: 1px solid #333; height: 70px; }
+        header h1 { color: #24caac; font-size: 24px; cursor: pointer; }
+        .back-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .back-btn:hover { background: #24caac; color: black; }
+
+        /* PROFİL KARTI */
+        .container { max-width: 800px; margin: 0 auto; width: 90%; padding: 30px 0; }
+        .profile-card { background: #1a1a1a; border: 1px solid #333; border-radius: 15px; padding: 30px; display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; position: relative; }
+        .avatar-circle { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #24caac; margin-bottom: 15px; background: white; }
+        .user-name { font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #fff; }
+        .user-dept { font-size: 14px; color: #888; margin-bottom: 15px; }
+        .bio-text { color: #ccc; text-align: center; max-width: 500px; line-height: 1.6; margin-bottom: 20px; }
+
+        /* BUTONLAR */
+        .interaction-btns { display: flex; gap: 15px; margin-bottom: 20px; }
+        .btn-action { padding: 10px 25px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-follow { background: #24caac; color: #000; }
+        .btn-msg { background: #333; color: #fff; border: 1px solid #555; }
+        .btn-msg:hover { border-color: #24caac; }
+
+        /* İSTATİSTİKLER VE SEKMELER */
+        .stats-bar { display: flex; gap: 20px; padding-top: 20px; border-top: 1px solid #333; width: 100%; justify-content: center; flex-wrap: wrap; }
+        .stat-item { text-align: center; cursor: pointer; padding: 10px 15px; border-radius: 10px; min-width: 80px; transition: 0.2s; }
+        .stat-item:hover { background: #222; }
+        .stat-item.active { background: rgba(36, 202, 172, 0.1); border-bottom: 2px solid #24caac; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #fff; display: block; }
+        .stat-label { font-size: 12px; color: #888; }
+
+        /* TAB İÇERİKLERİ */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* GÖNDERİLER */
+        .section-title { color: #24caac; margin-bottom: 20px; padding-left: 10px; border-left: 4px solid #24caac; font-size: 16px; }
+        .feed-post { background: #1a1a1a; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .post-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .post-content { margin-bottom: 15px; line-height: 1.5; font-size: 15px; }
+        .post-image { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #333; max-height: 400px; object-fit: contain; background: #000; }
+
+        .private-msg { text-align: center; color: #888; padding: 40px; background: #111; border-radius: 10px; border: 1px solid #333; margin-top: 20px;}
+        .private-msg i { font-size: 40px; margin-bottom: 10px; display: block; }
+        
+        /* LİSTE ELEMANLARI */
+        .user-list-item { display: flex; align-items: center; justify-content: space-between; background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; }
+        .user-list-info { display: flex; align-items: center; gap: 10px; }
+        .user-list-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .empty-list-msg { text-align: center; padding: 20px; color: #666; font-size: 13px; }
+
+        /* MOBİL UYUMLULUK */
+        @media (max-width: 768px) {
+            .container { width: 100%; padding: 10px; }
+            .profile-card { padding: 20px 10px; }
+            .stats-bar { gap: 10px; }
+            .stat-item { min-width: 70px; padding: 5px 10px; }
+            .stat-value { font-size: 16px; }
+            .stat-label { font-size: 11px; }
+            header { padding: 10px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="window.location.href='pylsmgemini.html'">Just MSKU</h1>
+        <a href="pylsmgemini.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Geri Dön</a>
+    </header>
+
+    <div class="container">
+        <div class="profile-card">
+            <img id="uImg" src="" class="avatar-circle">
+            <div id="uName" class="user-name">Yükleniyor...</div>
+            <div id="uDept" class="user-dept">MSKU</div>
+            <div id="uBio" class="bio-text">...</div>
+
+            <div class="interaction-btns">
+                <button id="followBtn" class="btn-action btn-follow" onclick="toggleFollow()">Takip Et</button>
+                <button id="msgBtn" class="btn-action btn-msg" onclick="goToChat()">Mesaj Gönder</button>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-item active" id="tab-posts" onclick="switchTab('posts')">
+                    <span id="sPost" class="stat-value">0</span>
+                    <span class="stat-label">Gönderi</span>
+                </div>
+                <div class="stat-item" id="tab-followers" onclick="switchTab('followers')">
+                    <span id="sFollowers" class="stat-value">0</span>
+                    <span class="stat-label">Takipçi</span>
+                </div>
+                <div class="stat-item" id="tab-following" onclick="switchTab('following')">
+                    <span id="sFollowing" class="stat-value">0</span>
+                    <span class="stat-label">Takip</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-posts" class="tab-content active">
+            <h3 class="section-title">Paylaşımlar</h3>
+            <div id="userPosts">
+                <div style="text-align:center; color:#555;">Yükleniyor...</div>
+            </div>
+        </div>
+
+        <div id="content-followers" class="tab-content">
+            <h3 class="section-title">Takipçiler</h3>
+            <div id="followersList">
+                <div class="empty-list-msg">Yükleniyor...</div>
+            </div>
+        </div>
+
+        <div id="content-following" class="tab-content">
+            <h3 class="section-title">Takip Ettikleri</h3>
+            <div id="followingList">
+                <div class="empty-list-msg">Yükleniyor...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, serverTimestamp, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
+            authDomain: "justmsku.firebaseapp.com",
+            projectId: "justmsku",
+            storageBucket: "justmsku.firebasestorage.app",
+            messagingSenderId: "424626283802",
+            appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let myUid = null;
+        let targetUid = null;
+        let isFollowing = false;
+        let relationshipId = null;
+        let targetUserData = null;
+        let followRequestSent = false;
+        let requestId = null;
+        const defaultAvatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
+
+        const params = new URLSearchParams(window.location.search);
+        targetUid = params.get('kisi');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                myUid = user.uid;
+                if(!targetUid) { alert("Kullanıcı belirtilmedi!"); window.location.href='pylsmgemini.html'; return; }
+                if(myUid === targetUid) { window.location.href='profil.html'; return; } 
+
+                loadTargetProfile();
+                // Paylaşım listesini (takipçileri) önceden yükle ki paylaş butonuna basınca hazır olsun
+                loadShareListForModal();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        async function loadTargetProfile() {
+            const userDoc = await getDoc(doc(db, "users", targetUid));
+            if (!userDoc.exists()) {
+                document.querySelector('.container').innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Kullanıcı Bulunamadı.</h2>";
+                return;
+            }
+
+            targetUserData = userDoc.data();
+            document.getElementById('uName').innerText = targetUserData.username;
+            document.getElementById('uImg').src = targetUserData.photoURL || defaultAvatar;
+            document.getElementById('uBio').innerText = targetUserData.bio || "Biyografi yok.";
+
+            const qRel = query(collection(db, "relationships"), where("followerUid", "==", myUid), where("followingUid", "==", targetUid), where("status", "==", "accepted"));
+            const snapRel = await getDocs(qRel);
+            
+            if(!snapRel.empty) {
+                isFollowing = true;
+                relationshipId = snapRel.docs[0].id;
+            } else {
+                const qReq = query(collection(db, "friendRequests"), where("fromUid", "==", myUid), where("toUid", "==", targetUid));
+                const snapReq = await getDocs(qReq);
+                if(!snapReq.empty) {
+                    followRequestSent = true;
+                    requestId = snapReq.docs[0].id;
+                }
+            }
+            
+            updateFollowBtnUI();
+            loadStats();
+            checkPrivacyAndLoad();
+        }
+
+        async function checkPrivacyAndLoad() {
+            if (targetUserData.isPrivate && !isFollowing) {
+                document.getElementById('userPosts').innerHTML = `<div class="private-msg"><i class="fa-solid fa-lock"></i> Bu hesap gizli.<br>Gönderileri görmek için takip et.</div>`;
+                document.getElementById('followersList').innerHTML = '<div class="empty-list-msg"><i class="fa-solid fa-lock"></i> Bu hesap gizli.</div>';
+                document.getElementById('followingList').innerHTML = '<div class="empty-list-msg"><i class="fa-solid fa-lock"></i> Bu hesap gizli.</div>';
+            } else {
+                loadUserPosts();
+            }
+        }
+
+        async function loadStats() {
+            const qPosts = query(collection(db, "posts"), where("uid", "==", targetUid));
+            const sPosts = await getDocs(qPosts);
+            document.getElementById('sPost').innerText = sPosts.size;
+
+            const qFollowers = query(collection(db, "relationships"), where("followingUid", "==", targetUid), where("status", "==", "accepted"));
+            const sFollowers = await getDocs(qFollowers);
+            document.getElementById('sFollowers').innerText = sFollowers.size;
+
+            const qFollowing = query(collection(db, "relationships"), where("followerUid", "==", targetUid), where("status", "==", "accepted"));
+            const sFollowing = await getDocs(qFollowing);
+            document.getElementById('sFollowing').innerText = sFollowing.size;
+        }
+
+        // --- GÜNCELLENEN GÖNDERİ YÜKLEME (ETKİLEŞİMLİ) ---
+        async function loadUserPosts() {
+            const feed = document.getElementById('userPosts');
+            feed.innerHTML = '<div style="text-align:center; padding:20px;">Yükleniyor...</div>';
+            
+            try {
+                const q = query(collection(db, "posts"), where("uid", "==", targetUid), orderBy("timestamp", "desc"));
+                const snapshot = await getDocs(q);
+
+                feed.innerHTML = ''; 
+
+                if(snapshot.empty) {
+                    feed.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Henüz gönderi yok.</div>';
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    createPostHTML(doc.id, doc.data(), feed);
+                });
+
+            } catch (error) {
+                console.error("Gönderi hatası:", error);
+                if (error.code === 'failed-precondition') {
+                    feed.innerHTML = '<div style="color:red; text-align:center;">İndeks Eksik. Console loguna bak.</div>';
+                    console.log(error.message);
+                }
+            }
+        }
+
+        // --- HTML OLUŞTURUCU (Ana Sayfa ile Aynı Yapıda) ---
+        function createPostHTML(postId, post, container) {
+            let mediaHTML = "";
+            if (post.mediaUrl) { 
+                if (post.type === 'video') mediaHTML = `<video src="${post.mediaUrl}" controls class="post-image" style="background:#000; width:100%; max-height:400px;"></video>`; 
+                else mediaHTML = `<img src="${post.mediaUrl}" class="post-image">`; 
+            } else if (post.image) {
+                mediaHTML = `<img src="${post.image}" class="post-image">`; 
+            }
+            
+            let dateStr = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleDateString("tr-TR") : "";
+
+            // Beğeni Durumu
+            const isLiked = post.likedBy && post.likedBy.includes(myUid);
+            const likeClass = isLiked ? 'liked' : '';
+            const heartIcon = isLiked ? 'fa-solid' : 'fa-regular';
+
+            const html = `
+                <div class="feed-post" id="${postId}">
+                    <div class="post-header">
+                        <div class="user-info-group">
+                            <img src="${targetUserData.photoURL || defaultAvatar}">
+                            <div><strong>${targetUserData.username}</strong><div style="font-size:12px;color:#888;">${dateStr}</div></div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.text}</div>
+                    ${mediaHTML}
+                    
+                    <div class="post-actions">
+                        <div id="like-btn-${postId}" class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
+                            <i class="${heartIcon} fa-heart"></i> <span>${post.likes || 0}</span>
+                        </div>
+                        <div class="action-btn" onclick="toggleCommentSection('${postId}')">
+                            <i class="fa-regular fa-comment"></i> Yorum <span id="count-${postId}"></span>
+                        </div>
+                        <div class="action-btn" onclick="openShareModal('${postId}')">
+                            <i class="fa-solid fa-share-nodes"></i> Paylaş
+                        </div>
+                    </div>
+
+                    <div id="comments-${postId}" class="comment-section" style="display:none; margin-top:10px; border-top:1px solid #333; padding-top:10px;">
+                        <div class="comment-list" id="list-${postId}" style="margin-bottom:10px;"></div>
+                        <div class="comment-input-wrapper" style="display:flex; gap:5px;">
+                            <input type="text" id="input-${postId}" placeholder="Yorum yaz..." style="flex:1; background:#222; border:1px solid #444; color:white; padding:5px 10px; border-radius:15px;">
+                            <button onclick="saveComment('${postId}')" style="background:#24caac; border:none; padding:5px 10px; border-radius:15px; cursor:pointer;">At</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            loadComments(postId); // Yorumları yükle
+        }
+
+        // --- ETKİLEŞİM FONKSİYONLARI ---
+
+        window.toggleLike = async function(postId) {
+            const ref = doc(db, "posts", postId);
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+                const p = snap.data();
+                let likes = p.likes || 0;
+                let likedBy = p.likedBy || [];
+                
+                if(likedBy.includes(myUid)) {
+                    likes--; likedBy = likedBy.filter(id => id !== myUid);
+                } else {
+                    likes++; likedBy.push(myUid);
+                }
+                
+                await updateDoc(ref, { likes: likes, likedBy: likedBy });
+                
+                // UI Güncelle (Basitçe)
+                const btn = document.getElementById(`like-btn-${postId}`);
+                if(btn) {
+                    const isLiked = likedBy.includes(myUid);
+                    btn.className = `action-btn ${isLiked ? 'liked' : ''}`;
+                    btn.innerHTML = `<i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> <span>${likes}</span>`;
+                }
+            }
+        }
+
+        window.toggleCommentSection = (id) => {
+            const el = document.getElementById(`comments-${id}`);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function loadComments(postId) {
+            const l = document.getElementById(`list-${postId}`);
+            const countSpan = document.getElementById(`count-${postId}`);
+            const q = query(collection(db, "comments"), where("postId", "==", postId), orderBy("timestamp", "asc"));
+            
+            // Gerçek zamanlı dinleyici yerine tek seferlik çekiyoruz (Performans için profilde daha iyi)
+            getDocs(q).then(snap => {
+                if(countSpan) countSpan.innerText = snap.size > 0 ? snap.size : "";
+                l.innerHTML = '';
+                snap.forEach(doc => {
+                    const c = doc.data();
+                    l.innerHTML += `<div style="font-size:13px; margin-bottom:5px;"><strong style="color:#24caac;">${c.username}</strong>: ${c.text}</div>`;
+                });
+            });
+        }
+
+        window.saveComment = async function(postId) {
+            const input = document.getElementById(`input-${postId}`);
+            const text = input.value.trim();
+            if(!text) return;
+            
+            // Kullanıcı verisini al (myUid üzerinden)
+            const meDoc = await getDoc(doc(db, "users", myUid));
+            const meData = meDoc.data();
+
+            await addDoc(collection(db, "comments"), {
+                postId: postId,
+                text: text,
+                uid: myUid,
+                username: meData.username,
+                userImg: meData.photoURL || defaultAvatar,
+                timestamp: serverTimestamp()
+            });
+            input.value = "";
+            loadComments(postId); // Listeyi yenile
+        }
+
+        // --- PAYLAŞIM (Sohbete Gönder) ---
+        let currentPostIdToShare = null;
+        
+        // Modal HTML'ini dinamik oluşturmuyoruz, HTML'de var varsayıyoruz.
+        // Yoksa hata vermemesi için kontrol ediyoruz.
+        
+        window.openShareModal = (postId) => {
+            currentPostIdToShare = postId;
+            const modal = document.getElementById('shareModal'); // HTML'de shareModal olmalı
+            if(modal) modal.style.display = 'flex';
+        }
+        window.closeShareModal = () => {
+            const modal = document.getElementById('shareModal');
+            if(modal) modal.style.display = 'none';
+        }
+
+        // Modaldaki listeyi doldurmak için (Benim takipçilerim)
+        async function loadShareListForModal() {
+            const list = document.getElementById('shareModalList');
+            if(!list) return; 
+            
+            // Ben kimi takip ediyorum? (Arkadaşlarıma gönderebilirim)
+            const q = query(collection(db, "relationships"), where("followerUid", "==", myUid), where("status", "==", "accepted"));
+            const snap = await getDocs(q);
+            
+            list.innerHTML = '';
+            if(snap.empty) { list.innerHTML = '<div style="color:#888;">Kimseyi takip etmiyorsun.</div>'; return; }
+
+            snap.forEach(async (d) => {
+                const rel = d.data();
+                const uDoc = await getDoc(doc(db, "users", rel.followingUid));
+                if(uDoc.exists()) {
+                    const u = uDoc.data();
+                    list.innerHTML += `
+                        <div class="share-contact" onclick="shareWithContact('${u.username}', '${u.uid}')">
+                            <div class="share-info"><img src="${u.photoURL || defaultAvatar}"><span>${u.username}</span></div>
+                            <button class="user-list-btn">Gönder</button>
+                        </div>`;
+                }
+            });
+        }
+
+        window.shareWithContact = async (name, targetUid) => {
+            // 1. Sohbet Odası ID
+            const roomId = [myUid, targetUid].sort().join("_");
+            
+            // 2. Gönderi Bilgisi
+            const pDoc = await getDoc(doc(db, "posts", currentPostIdToShare));
+            const pData = pDoc.data();
+
+            // 3. Mesaj Olarak Kaydet
+            await addDoc(collection(db, "chats", roomId, "messages"), {
+                isSharedPost: true,
+                postData: {
+                    id: currentPostIdToShare,
+                    text: pData.text,
+                    media: pData.mediaUrl || pData.image,
+                    type: pData.type || 'text',
+                    owner: pData.username
+                },
+                senderId: myUid,
+                timestamp: serverTimestamp()
+            });
+            
+            alert("Gönderildi!");
+            closeShareModal();
+        }
+
+        // --- DİĞER FONKSİYONLAR (Sekmeler vb.) ---
+        window.switchTab = function(tabName) {
+            if (targetUserData.isPrivate && !isFollowing && (tabName === 'followers' || tabName === 'following')) {
+                return alert("Bu hesap gizli. Listeleri görmek için takip etmelisin.");
+            }
+            document.querySelectorAll('.stat-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('content-' + tabName).classList.add('active');
+            if (tabName === 'followers') loadLists('followers');
+            if (tabName === 'following') loadLists('following');
+        }
+
+        async function loadLists(type) {
+            const container = document.getElementById(type + 'List');
+            container.innerHTML = '<div class="empty-list-msg">Yükleniyor...</div>';
+            let q;
+            if (type === 'followers') q = query(collection(db, "relationships"), where("followingUid", "==", targetUid), where("status", "==", "accepted"));
+            else q = query(collection(db, "relationships"), where("followerUid", "==", targetUid), where("status", "==", "accepted"));
+            
+            const snapshot = await getDocs(q);
+            container.innerHTML = '';
+            if (snapshot.empty) { container.innerHTML = '<div class="empty-list-msg">Liste boş.</div>'; return; }
+
+            snapshot.forEach(async (docSnap) => {
+                const rel = docSnap.data();
+                const uidToFetch = type === 'followers' ? rel.followerUid : rel.followingUid;
+                const uDoc = await getDoc(doc(db, "users", uidToFetch));
+                if(uDoc.exists()) {
+                    const uData = uDoc.data();
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="user-list-item" onclick="window.location.href='takip.html?kisi=${uidToFetch}'">
+                            <div class="user-list-info"><img src="${uData.photoURL || defaultAvatar}"><div style="font-weight:600;">${uData.username}</div></div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        window.toggleFollow = async function() {
+            const btn = document.getElementById('followBtn'); btn.disabled = true;
+            try {
+                if (isFollowing) {
+                    if(confirm("Takipten çıkılsın mı?")) { await deleteDoc(doc(db, "relationships", relationshipId)); isFollowing = false; relationshipId = null; location.reload(); }
+                } else if (followRequestSent) {
+                    await deleteDoc(doc(db, "friendRequests", requestId)); followRequestSent = false; requestId = null;
+                } else {
+                    if (targetUserData.isPrivate) {
+                        const ref = await addDoc(collection(db, "friendRequests"), { fromUid: myUid, toUid: targetUid, timestamp: serverTimestamp() });
+                        followRequestSent = true; requestId = ref.id;
+                    } else {
+                        const ref = await addDoc(collection(db, "relationships"), { followerUid: myUid, followingUid: targetUid, status: 'accepted', timestamp: serverTimestamp() });
+                        isFollowing = true; relationshipId = ref.id; location.reload();
+                    }
+                }
+                updateFollowBtnUI();
+            } catch(e) { console.error(e); } finally { btn.disabled = false; }
+        }
+
+        function updateFollowBtnUI() {
+            const btn = document.getElementById('followBtn');
+            if (isFollowing) { btn.innerText = "Takip Ediliyor"; btn.style.background = "#333"; btn.style.color = "#24caac"; btn.style.border = "1px solid #24caac"; }
+            else if (followRequestSent) { btn.innerText = "İstek Gönderildi"; btn.style.background = "#555"; btn.style.color = "#fff"; btn.style.border = "none"; }
+            else { btn.innerText = "Takip Et"; btn.style.background = "#24caac"; btn.style.color = "#000"; btn.style.border = "none"; }
+        }
+
+        window.goToChat = function() { window.location.href = `pylsmgemini.html?chatUser=${targetUid}`; }
+        window.onclick = (e) => { if(e.target.id === 'shareModal') closeShareModal(); }
+    </script>
+</body>
+</html>

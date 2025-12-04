@@ -196,59 +196,44 @@
         const db = getFirestore(app);
 
         let currentUserUid = null;
-        let userDataCache = {}; // Kullanıcının tüm verilerini saklamak için
+        let userDataCache = {}; 
 
-        // --- 0. OTURUM KONTROLÜ VE VERİ YÜKLEME ---
+        // --- OTURUM KONTROLÜ ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserUid = user.uid;
-                
-                // Kullanıcının mevcut verilerini yükle ve cache'le
                 const docSnap = await getDoc(doc(db, "users", currentUserUid));
                 if (docSnap.exists()) {
                     userDataCache = docSnap.data();
                     loadPreferences(userDataCache);
                 }
-
                 loadBlockedUsers();
             } else {
                 window.location.href = "pylsmgemini.html";
             }
         });
 
-        // --- PREFERENCES (TERCİHLER) FONKSİYONLARI ---
-
-        // 1. Düğme Durumlarını Yükle
+        // --- TERCİHLER ---
         function loadPreferences(data) {
-            // Varsayılan değerler tanımla (undefined ise false al)
             document.getElementById('toggleNotifications').checked = data.prefNotifications || false;
             document.getElementById('toggleEmail').checked = data.prefEmail || false;
             document.getElementById('togglePrivateChat').checked = data.prefPrivateChat || false;
         }
 
-        // 2. Tercihleri Kaydet
         window.savePreference = async function(key, value) {
-            const fieldName = `pref${key.charAt(0).toUpperCase() + key.slice(1)}`; // Örneğin: 'notifications' -> 'prefNotifications'
-            
+            const fieldName = `pref${key.charAt(0).toUpperCase() + key.slice(1)}`;
             try {
-                // Firestore'da ilgili alanı anında güncelle
-                await updateDoc(doc(db, "users", currentUserUid), {
-                    [fieldName]: value
-                });
-                // Cache'i güncelle
+                await updateDoc(doc(db, "users", currentUserUid), { [fieldName]: value });
                 userDataCache[fieldName] = value;
                 showAlert("Ayarlar kaydedildi.");
             } catch (error) {
-                console.error("Tercih kaydedilirken hata oluştu:", error);
+                console.error("Hata:", error);
                 showAlert("Hata! Kaydedilemedi.");
-                // Hata durumunda düğmeyi eski haline getir
                 document.getElementById('toggle' + key.charAt(0).toUpperCase() + key.slice(1)).checked = !value;
             }
         }
         
-        // --- GİZLİLİK VE GÜVENLİK FONKSİYONLARI ---
-
-        // --- ENGELLENEN KULLANICILARI LİSTELE ---
+        // --- ENGELLENENLER ---
         async function loadBlockedUsers() {
             const listContainer = document.getElementById('blockedList');
             listContainer.innerHTML = '<div class="empty-msg">Yükleniyor...</div>';
@@ -266,42 +251,32 @@
             snapshot.forEach(async (docSnap) => {
                 const blockedData = docSnap.data(); 
                 const blockedDocId = docSnap.id;
-
                 const userDoc = await getDoc(doc(db, "users", blockedData.blockedUserId));
                 
                 if (userDoc.exists()) {
                     const u = userDoc.data();
                     const img = u.photoURL || "https://i.pravatar.cc/150?img=12";
-                    
                     const html = `
                         <div class="blocked-user-row" id="row-${blockedDocId}">
-                            <div class="user-info">
-                                <img src="${img}" alt="User">
-                                <span>${u.username}</span>
-                            </div>
+                            <div class="user-info"><img src="${img}" alt="User"><span>${u.username}</span></div>
                             <button class="unblock-btn" onclick="unblockUser('${blockedDocId}')">Engeli Kaldır</button>
-                        </div>
-                    `;
+                        </div>`;
                     listContainer.insertAdjacentHTML('beforeend', html);
                 }
             });
         }
 
-        // --- ENGELİ KALDIRMA ---
         window.unblockUser = async function(docId) {
             if (confirm("Bu kişinin engelini kaldırmak istiyor musunuz?")) {
                 try {
                     await deleteDoc(doc(db, "blockedUsers", docId));
-                    
                     const row = document.getElementById(`row-${docId}`);
                     if (row) {
                         row.style.opacity = "0";
                         setTimeout(() => {
                             row.remove();
                             const list = document.getElementById('blockedList');
-                            if (list.children.length === 0) {
-                                list.innerHTML = '<div class="empty-msg">Engellenen kullanıcı yok.</div>';
-                            }
+                            if (list.children.length === 0) list.innerHTML = '<div class="empty-msg">Engellenen kullanıcı yok.</div>';
                         }, 300);
                     }
                     showAlert("Engel kaldırıldı.");
@@ -312,11 +287,10 @@
             }
         }
 
-        // --- ŞİFRE GÜNCELLEME ---
+        // --- ŞİFRE ---
         window.updatePassword = function() {
             const p1 = document.getElementById('newPass').value;
             const p2 = document.getElementById('confirmPass').value;
-
             if (p1 === "" || p2 === "") return alert("Lütfen yeni şifre giriniz.");
             if (p1 !== p2) return alert("Şifreler uyuşmuyor!");
 
@@ -327,38 +301,99 @@
                     document.getElementById('newPass').value = "";
                     document.getElementById('confirmPass').value = "";
                 }).catch((error) => {
-                    // Firebase Auth'un yeniden kimlik doğrulama gereksinimi nedeniyle bu hata sık görülür.
-                    alert("Hata! Güvenlik nedeniyle tekrar giriş yapmanız gerekebilir. Lütfen çıkış yapıp tekrar deneyin.");
+                    alert("Hata! Güvenlik nedeniyle tekrar giriş yapmanız gerekebilir.");
                 });
             }
         }
 
-        // --- TEHLİKELİ BÖLGE FONKSİYONLARI ---
+        // --- ÇIKIŞ YAP ---
         window.performLogout = function() {
             if(confirm("Çıkış yapmak istediğinize emin misiniz?")) {
-                signOut(auth).then(() => {
-                    window.location.href = "pylsmgemini.html"; // Ana sayfaya yönlendir
-                });
+                signOut(auth).then(() => { window.location.href = "pylsmgemini.html"; });
             }
         }
 
-        window.deleteAccount = function() {
-            if(confirm("DİKKAT! Hesabınız silinecek. Bu işlem geri alınamaz. Emin misiniz?")) {
-                const user = auth.currentUser;
-                if (user) {
-                    // Not: Gerçek bir uygulamada, bu işlemden önce Firestore'daki tüm verileri (postlar, yorumlar, ilişkiler) silmek gerekir.
-                    deleteUser(user).then(() => {
-                        alert("Hesabınız silindi.");
-                        window.location.href = "pylsmgemini.html";
-                    }).catch((error) => {
-                        // Yeniden kimlik doğrulama hatası
-                        alert("Hata! Hesabınızı silmek için güvenlik nedeniyle tekrar giriş yapmanız gerekebilir.");
-                    });
+        // --- HESABI TAMAMEN SİL (GÜNCELLENEN KISIM) ---
+        window.deleteAccount = async function() {
+            const confirmation = confirm("DİKKAT! Hesabınız ve tüm verileriniz (gönderiler, yorumlar, profil, takipler) kalıcı olarak silinecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?");
+            
+            if (!confirmation) return;
+
+            const user = auth.currentUser;
+            if (!user) return;
+
+            // Butonu güncelle (Yükleniyor durumu)
+            const btn = document.querySelector('.danger-btn:last-child'); // Silme butonu
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Siliniyor...';
+            btn.disabled = true;
+
+            try {
+                const uid = user.uid;
+
+                // 1. Kullanıcı Profil Dökümanını Sil
+                await deleteDoc(doc(db, "users", uid));
+
+                // 2. Kullanıcının Gönderilerini Sil
+                const postsQ = query(collection(db, "posts"), where("uid", "==", uid));
+                const postsSnap = await getDocs(postsQ);
+                const postDeletions = postsSnap.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(postDeletions);
+
+                // 3. Kullanıcının Yorumlarını Sil
+                const commentsQ = query(collection(db, "comments"), where("uid", "==", uid));
+                const commentsSnap = await getDocs(commentsQ);
+                const commentDeletions = commentsSnap.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(commentDeletions);
+
+                // 4. İlişkileri (Takip/Takipçi) Sil
+                // A) Ben kimi takip ediyorum?
+                const relQ1 = query(collection(db, "relationships"), where("followerUid", "==", uid));
+                const relSnap1 = await getDocs(relQ1);
+                // B) Beni kim takip ediyor?
+                const relQ2 = query(collection(db, "relationships"), where("followingUid", "==", uid));
+                const relSnap2 = await getDocs(relQ2);
+
+                const relDeletions = [
+                    ...relSnap1.docs.map(doc => deleteDoc(doc.ref)),
+                    ...relSnap2.docs.map(doc => deleteDoc(doc.ref))
+                ];
+                await Promise.all(relDeletions);
+
+                // 5. İstekleri Sil (Gelen ve Giden)
+                const reqQ1 = query(collection(db, "friendRequests"), where("fromUid", "==", uid));
+                const reqSnap1 = await getDocs(reqQ1);
+                const reqQ2 = query(collection(db, "friendRequests"), where("toUid", "==", uid));
+                const reqSnap2 = await getDocs(reqQ2);
+
+                const reqDeletions = [
+                    ...reqSnap1.docs.map(doc => deleteDoc(doc.ref)),
+                    ...reqSnap2.docs.map(doc => deleteDoc(doc.ref))
+                ];
+                await Promise.all(reqDeletions);
+
+                // 6. EN SON: Authentication Hesabını Sil
+                await deleteUser(user);
+
+                alert("Hesabınız başarıyla silindi. Bizi tercih ettiğiniz için teşekkürler.");
+                window.location.href = "index.html";
+
+            } catch (error) {
+                console.error("Silme hatası:", error);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+                // Güvenlik hatası (Hesap silmek için yeni giriş şarttır)
+                if (error.code === 'auth/requires-recent-login') {
+                    alert("Güvenlik gereği, hesabınızı silmek için oturumu kapatıp tekrar giriş yapmanız gerekmektedir.");
+                    await signOut(auth);
+                    window.location.href = "login.html";
+                } else {
+                    alert("Bir hata oluştu: " + error.message);
                 }
             }
         }
 
-        // --- YARDIMCI BİLDİRİM FONKSİYONU ---
         function showAlert(msg) {
             const box = document.getElementById('alertBox');
             box.innerText = msg;

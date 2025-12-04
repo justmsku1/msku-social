@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "424626283802",
+    "project_id": "justmsku",
+    "storage_bucket": "justmsku.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:424626283802:android:82b015364bfe2bb5cd78a3",
+        "android_client_info": {
+          "package_name": "com.justmsku.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDijwmxnHhUpHa9IAG96HuBqVu1DMLp5ls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
