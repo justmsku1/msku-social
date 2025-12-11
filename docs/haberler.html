@@ -7,13 +7,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          // --- BURAYI DEĞİŞTİR: Yeni hesabının Public Key'ini buraya yapıştır ---
+          emailjs.init("PUBLIC_KEY_BURAYA_GELECEK");
+       })();
+    </script>
+
     <link rel="stylesheet" href="style.css">
 
     <style>
         /* --- SAYFAYA ÖZEL DÜZEN AYARLARI --- */
-        /* Burada renkleri 'var(...)' ile değiştirerek temaya uyumlu hale getirdik */
-        
-        /* CONTAINER */
         .container { max-width: 800px; margin: 30px auto; width: 90%; padding-bottom: 50px; }
 
         /* BAŞLIK ALANI */
@@ -154,6 +159,33 @@
         </div>
     </div>
 
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('reportModal')">&times;</span>
+            <h2 style="color: #ff4b4b;">Haberi Bildir</h2>
+            <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">
+                Bu içeriğin topluluk kurallarına aykırı olduğunu düşünüyorsanız lütfen sebebini belirtin.
+            </p>
+            
+            <input type="hidden" id="reportNewsId">
+            <div class="form-group">
+                <label>Şikayet Nedeni</label>
+                <select id="reportReasonSelect" class="form-control" style="margin-bottom:10px;">
+                    <option value="spam">Spam / Yanıltıcı İçerik</option>
+                    <option value="hakaret">Hakaret / Nefret Söylemi</option>
+                    <option value="uygunsuz">Uygunsuz Görsel</option>
+                    <option value="diger">Diğer</option>
+                </select>
+                <textarea id="reportDetail" class="form-control" rows="3" placeholder="Eklemek istedikleriniz..."></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('reportModal')">Vazgeç</button>
+                <button class="add-btn" onclick="submitReport()" style="background-color: #ff4b4b; color: white;">Bildir</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -175,7 +207,7 @@
         let currentUser = null;
         let newsCache = {}; 
 
-        // --- TEMA SİSTEMİ (JS EKLENDİ) ---
+        // --- TEMA SİSTEMİ ---
         window.addEventListener('load', () => {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') { document.body.classList.add('light-mode'); }
@@ -211,7 +243,7 @@
             }
         });
 
-        // --- LİSTELEME ---
+        // --- LİSTELEME VE SİMGE GÜNCELLEMESİ ---
         function loadNews() {
             const grid = document.getElementById('newsGrid');
             const q = query(collection(db, "news"), orderBy("timestamp", "desc"));
@@ -240,7 +272,13 @@
                             </div>
                         `;
                     } else {
-                        actions = `<div class="news-actions"><i class="fa-solid fa-triangle-exclamation action-icon" onclick="event.stopPropagation(); alert('Bildirildi')"></i></div>`;
+                        actions = `
+                            <div class="news-actions">
+                                <i class="fa-solid fa-triangle-exclamation action-icon" 
+                                   style="color: #ffca28;" 
+                                   onclick="event.stopPropagation(); openReportModal('${id}')">
+                                </i>
+                            </div>`;
                     }
 
                     const html = `
@@ -262,7 +300,62 @@
             });
         }
 
-        // --- EKLEME / GÜNCELLEME ---
+        // --- BİLDİRİ İŞLEMLERİ (MAIL + FIREBASE) ---
+        window.openReportModal = function(id) {
+            document.getElementById('reportNewsId').value = id;
+            document.getElementById('reportDetail').value = ""; 
+            document.getElementById('reportModal').style.display = 'flex';
+        }
+
+        window.submitReport = async function() {
+            const newsId = document.getElementById('reportNewsId').value;
+            const reason = document.getElementById('reportReasonSelect').value;
+            const detail = document.getElementById('reportDetail').value;
+
+            if (!newsId) return;
+
+            const btn = document.querySelector('#reportModal .add-btn');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "Gönderiliyor...";
+
+            try {
+                // 1. Firebase'e Kaydet
+                await addDoc(collection(db, "reports"), {
+                    targetId: newsId,
+                    type: "news",
+                    reason: reason,
+                    detail: detail,
+                    reporterUid: currentUser.uid,
+                    reporterEmail: currentUser.email,
+                    timestamp: new Date()
+                });
+
+                // 2. EmailJS ile Mail Gönder
+                const templateParams = {
+                    news_id: newsId,                  // Şablonundaki {{news_id}} ile eşleşir
+                    reason: reason,                   // Şablonundaki {{reason}} ile eşleşir
+                    detail: detail,                   // Şablonundaki {{detail}} ile eşleşir
+                    reporter: currentUser.email       // Şablonundaki {{reporter}} ile eşleşir
+                };
+
+                // YENİ ŞABLON ID: template_qbjoucd
+                // SERVICE ID: Henüz verilmediği için boş bıraktım, sen dolduracaksın
+                await emailjs.send('SERVICE_ID_BURAYA_GELECEK', 'template_phh0c1p', templateParams);
+
+                alert("Bildiriminiz iletildi! Teşekkürler.");
+                closeModal('reportModal');
+
+            } catch (error) {
+                console.error("Bildiri hatası:", error);
+                alert("Hata oluştu: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+
+        // --- DİĞER FONKSİYONLAR ---
         window.saveNews = async function() {
             const title = document.getElementById('newsTitle').value;
             const content = document.getElementById('newsContent').value;

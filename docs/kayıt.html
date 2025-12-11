@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kayıt Ol - Just MSKU</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
         body { 
@@ -129,7 +131,8 @@
         import { getFirestore, doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- EMAILJS BAŞLATMA ---
-        emailjs.init("CYIIX3kfQyoPUedSP"); // Kendi Public Key'in
+        // Senin PUBLIC KEY'in
+        emailjs.init("0HFAh7CQIeDet-qKg"); 
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
@@ -156,58 +159,37 @@
             const errorDiv = document.getElementById('errorMsg1');
             const btn = this;
 
-            // 1. KVKK KONTROLÜ
-            if (!kvkkCheck.checked) {
-                alert("Kayıt olabilmek için KVKK Aydınlatma Metni'ni okuyup onaylamanız gerekmektedir.");
-                return;
-            }
+            // Kontroller
+            if (!kvkkCheck.checked) return alert("KVKK metnini onaylamanız gerekmektedir.");
+            if(username === "" || email === "" || password === "") return showError(errorDiv, "Lütfen tüm alanları doldurun.");
+            if (!email.endsWith("@posta.mu.edu.tr")) return showError(errorDiv, "Sadece @posta.mu.edu.tr uzantılı mailler kayıt olabilir.");
+            if (password.length < 6) return showError(errorDiv, "Şifre en az 6 karakter olmalıdır.");
 
-            // 2. BOŞ ALAN KONTROLÜ
-            if(username === "" || email === "" || password === "") {
-                showError(errorDiv, "Lütfen tüm alanları doldurun.");
-                return;
-            }
-
-            // 3. DOMAIN KONTROLÜ
-            if (!email.endsWith("@posta.mu.edu.tr")) {
-                showError(errorDiv, "Sadece @posta.mu.edu.tr uzantılı mailler kayıt olabilir.");
-                return;
-            }
-
-            // 4. ŞİFRE KONTROLÜ
-            if (password.length < 6) {
-                showError(errorDiv, "Şifre en az 6 karakter olmalıdır.");
-                return;
-            }
-
-            // Butonu pasif yap (Kontrol başlarken)
             btn.innerText = "Kontrol Ediliyor...";
             btn.disabled = true;
 
             try {
-                // --- YENİ EKLENEN KISIM: VERİTABANI KONTROLÜ ---
-                // Kullanıcı 'users' tablosunda zaten var mı?
+                // Veritabanı Kontrolü (Email zaten var mı?)
                 const q = query(collection(db, "users"), where("email", "==", email));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    // Kayıt varsa durdur
-                    showError(errorDiv, "Bu e-posta adresi zaten sisteme kayıtlı. Giriş yapabilirsiniz.");
+                    showError(errorDiv, "Bu e-posta adresi zaten sisteme kayıtlı.");
                     btn.innerText = "Doğrulama Kodu Gönder";
                     btn.disabled = false;
                     return; 
                 }
-                // ------------------------------------------------
 
-                // Kayıt yoksa kod üret ve gönder
+                // Kod Üret
                 generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
                 tempUserData = { username, email, password };
                 
                 btn.innerText = "Kod Gönderiliyor...";
 
-                // --- EMAILJS ---
-                const serviceID = "service_7an2b0g"; // Kendi ID'n
-                const templateID = "template_xyh86lk"; // Kendi ID'n
+                // --- EMAILJS AYARLARI ---
+                // Senin SERVICE ID ve TEMPLATE ID'n
+                const serviceID = "service_0z7sl3w"; 
+                const templateID = "template_qbjoucd"; 
 
                 const templateParams = {
                     to_email: email,      
@@ -223,14 +205,14 @@
                         document.getElementById('displayEmail').innerText = email;
                     }, (err) => {
                         console.error('EmailJS Hatası:', err);
-                        showError(errorDiv, "Kod gönderilemedi. " + JSON.stringify(err));
+                        showError(errorDiv, "Kod gönderilemedi: " + JSON.stringify(err));
                         btn.innerText = "Doğrulama Kodu Gönder";
                         btn.disabled = false;
                     });
 
             } catch (error) {
-                console.error("Sorgu hatası:", error);
-                showError(errorDiv, "Bir hata oluştu: " + error.message);
+                console.error("Hata:", error);
+                showError(errorDiv, "Hata: " + error.message);
                 btn.innerText = "Doğrulama Kodu Gönder";
                 btn.disabled = false;
             }
@@ -251,11 +233,11 @@
             btn.disabled = true;
 
             try {
-                // Firebase Auth Kayıt
+                // Firebase Kayıt
                 const userCredential = await createUserWithEmailAndPassword(auth, tempUserData.email, tempUserData.password);
                 const user = userCredential.user;
 
-                // Firestore Veri Yazma
+                // Firestore Kayıt
                 await setDoc(doc(db, "users", user.uid), {
                     username: tempUserData.username,
                     email: tempUserData.email,
@@ -263,18 +245,17 @@
                     photoURL: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
                     searchKey: tempUserData.username.toLocaleLowerCase('tr'), 
                     verified: true,
-                    isPrivate: false, // Varsayılan herkese açık
+                    isPrivate: false, 
                     createdAt: serverTimestamp()
                 });
 
                 alert("Kayıt Başarılı! Giriş yapılıyor...");
-                window.location.href = "pylsmgemini.html";
+                window.location.href = "pylsmgemini.html"; // Yönlendirilecek sayfa
 
             } catch (error) {
                 console.error(error);
                 btn.innerText = "Doğrula ve Kayıt Ol";
                 btn.disabled = false;
-
                 if(error.code === "auth/email-already-in-use") {
                     alert("Bu e-posta adresi zaten kayıtlı.");
                 } else {
