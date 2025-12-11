@@ -10,8 +10,8 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          // --- BURAYI DEĞİŞTİR: Yeni hesabının Public Key'ini buraya yapıştır ---
-          emailjs.init("PUBLIC_KEY_BURAYA_GELECEK");
+          // Senin Public Key'in
+          emailjs.init("0HFAh7CQIeDet-qKg");
        })();
     </script>
 
@@ -243,7 +243,7 @@
             }
         });
 
-        // --- LİSTELEME VE SİMGE GÜNCELLEMESİ ---
+        // --- LİSTELEME VE OTOMATİK MODAL AÇMA ---
         function loadNews() {
             const grid = document.getElementById('newsGrid');
             const q = query(collection(db, "news"), orderBy("timestamp", "desc"));
@@ -297,10 +297,20 @@
                     `;
                     grid.insertAdjacentHTML('beforeend', html);
                 });
+
+                // --- SİHİRLİ KISIM: URL'DE LINK VARSA OTOMATİK AÇ ---
+                // Link şuna benziyorsa: .../haberler.html?openPost=HABER_ID
+                const urlParams = new URLSearchParams(window.location.search);
+                const openPostId = urlParams.get('openPost');
+                
+                // Eğer URL'de ID varsa ve haber yüklendiyse, detayı aç
+                if (openPostId && newsCache[openPostId]) {
+                    showDetail(openPostId);
+                }
             });
         }
 
-        // --- BİLDİRİ İŞLEMLERİ (MAIL + FIREBASE) ---
+        // --- BİLDİRİ İŞLEMLERİ ---
         window.openReportModal = function(id) {
             document.getElementById('reportNewsId').value = id;
             document.getElementById('reportDetail').value = ""; 
@@ -320,6 +330,16 @@
             btn.innerText = "Gönderiliyor...";
 
             try {
+                // Haber verilerini al
+                const n = newsCache[newsId];
+                const postOwner = n ? n.username : "Bilinmiyor";
+                const postContent = n ? n.content : "İçerik Bulunamadı";
+                const currentDate = new Date().toLocaleString("tr-TR");
+
+                // --- ÖZEL LINK OLUŞTURMA ---
+                // Bu linke tıklanınca, sayfa açılacak ve "?openPost=" sayesinde modal otomatik tetiklenecek
+                const newsLink = window.location.href.split('?')[0] + "?openPost=" + newsId;
+
                 // 1. Firebase'e Kaydet
                 await addDoc(collection(db, "reports"), {
                     targetId: newsId,
@@ -333,15 +353,21 @@
 
                 // 2. EmailJS ile Mail Gönder
                 const templateParams = {
-                    news_id: newsId,                  // Şablonundaki {{news_id}} ile eşleşir
-                    reason: reason,                   // Şablonundaki {{reason}} ile eşleşir
-                    detail: detail,                   // Şablonundaki {{detail}} ile eşleşir
-                    reporter: currentUser.email       // Şablonundaki {{reporter}} ile eşleşir
+                    reporter_email: currentUser.email,
+                    reason: reason,
+                    detail: detail,
+                    post_owner: postOwner,
+                    news_id: newsId,
+                    post_content: postContent,
+                    date: currentDate,
+                    news_link: newsLink,  // Tıklanabilir link
+                    to_email: "justmsku@gmail.com"
                 };
+                
+                const serviceID = "service_0z7sl3w"; 
+                const templateID = "template_phh0c1p"; 
 
-                // YENİ ŞABLON ID: template_qbjoucd
-                // SERVICE ID: Henüz verilmediği için boş bıraktım, sen dolduracaksın
-                await emailjs.send('SERVICE_ID_BURAYA_GELECEK', 'template_phh0c1p', templateParams);
+                await emailjs.send(serviceID, templateID, templateParams);
 
                 alert("Bildiriminiz iletildi! Teşekkürler.");
                 closeModal('reportModal');

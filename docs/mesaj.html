@@ -3,206 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kullanıcı Profili - Just MSKU</title>
+    <title>Mesajlar - Just MSKU</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
     <style>
-        /* --- GENEL AYARLAR --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-        body { background-color: #000; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+        /* --- CHAT SAYFASINA ÖZEL STİLLER --- */
+        body { background-color: #000; color: #fff; font-family: 'Montserrat', sans-serif; overflow: hidden; }
 
         /* HEADER */
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 40px; background: #1a1a1a; border-bottom: 1px solid #333;
-            height: 70px;
+        header { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px 20px; background: #111; border-bottom: 1px solid #333;
+            height: 60px;
         }
-        header h1 { color: #24caac; font-size: 24px; cursor: pointer; }
-        .back-btn {
-            background: #333; color: white; border: none; padding: 8px 15px; 
-            border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px;
-            text-decoration: none; font-size: 14px; transition: 0.3s;
+        .header-title { font-size: 18px; font-weight: bold; color: #24caac; display: flex; align-items: center; gap: 10px; }
+        .back-btn { color: #fff; font-size: 20px; cursor: pointer; }
+
+        /* ANA KAPLAYICI */
+        .chat-container { display: flex; height: calc(100vh - 60px); position: relative; }
+
+        /* KULLANICI LİSTESİ (SOL TARAF) */
+        .user-list-area { 
+            width: 100%; 
+            background: #000; 
+            overflow-y: auto; 
+            border-right: 1px solid #333;
         }
-        .back-btn:hover { background: #24caac; color: black; }
+        .user-item { 
+            display: flex; align-items: center; gap: 15px; 
+            padding: 15px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s;
+        }
+        .user-item:hover { background: #111; }
+        .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #333; }
+        .user-info h4 { font-size: 15px; margin-bottom: 3px; color: #eee; }
+        .user-info p { font-size: 12px; color: #888; }
 
-        /* --- PROFİL ALANI --- */
-        .container { max-width: 800px; margin: 0 auto; width: 90%; padding: 30px 0; }
+        /* SOHBET ALANI (SAĞ TARAF) */
+        .chat-area { 
+            width: 100%; 
+            background: #0a0a0a; 
+            display: none; 
+            flex-direction: column;
+            position: absolute; top: 0; left: 0; height: 100%; z-index: 10;
+        }
+        
+        /* Sohbet Mesajları */
+        .messages-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        
+        .message { max-width: 75%; padding: 10px 15px; border-radius: 15px; font-size: 14px; line-height: 1.4; position: relative; word-wrap: break-word; }
+        .message.sent { align-self: flex-end; background: #24caac; color: #000; border-bottom-right-radius: 2px; }
+        .message.received { align-self: flex-start; background: #222; color: #fff; border-bottom-left-radius: 2px; }
+        
+        .msg-time { font-size: 10px; margin-top: 5px; opacity: 0.7; text-align: right; display: block; }
 
-        .profile-card {
-            background: #1a1a1a; border: 1px solid #333; border-radius: 15px;
-            padding: 30px; display: flex; flex-direction: column; align-items: center;
-            margin-bottom: 30px; position: relative;
+        /* Mesaj Yazma Alanı */
+        .input-area { 
+            padding: 15px; background: #111; border-top: 1px solid #333; 
+            display: flex; align-items: center; gap: 10px; 
+        }
+        .msg-input { 
+            flex: 1; background: #222; border: none; padding: 12px; 
+            border-radius: 25px; color: #fff; outline: none; 
+        }
+        .send-btn { 
+            background: #24caac; border: none; width: 40px; height: 40px; 
+            border-radius: 50%; color: #000; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
         }
 
-        /* Fotoğraf */
-        .avatar-circle {
-            width: 150px; height: 150px; border-radius: 50%; 
-            object-fit: cover; border: 4px solid #24caac;
-            margin-bottom: 15px;
+        .empty-state { text-align: center; color: #666; margin-top: 50px; font-size: 14px; }
+        .error-message { color: #ff4444; text-align: center; padding: 20px; font-size: 13px; }
+
+        /* Masaüstü Uyumu */
+        @media (min-width: 768px) {
+            .user-list-area { width: 350px; }
+            .chat-area { display: flex; position: static; width: calc(100% - 350px); border-left: 1px solid #333; }
         }
-
-        /* İsim & Bio */
-        .user-name { font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #fff; }
-        .user-dept { font-size: 14px; color: #888; margin-bottom: 15px; }
-        .bio-text { color: #ccc; text-align: center; max-width: 500px; line-height: 1.6; margin-bottom: 20px; }
-
-        /* Etkileşim Butonları (Takip Et / Mesaj) */
-        .interaction-btns { display: flex; gap: 15px; margin-bottom: 20px; }
-        .btn-action {
-            padding: 10px 25px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s;
-        }
-        .btn-follow { background: #24caac; color: #000; }
-        .btn-follow:hover { background: #1eb59a; }
-        .btn-msg { background: #333; color: #fff; border: 1px solid #555; }
-        .btn-msg:hover { border-color: #24caac; }
-
-        /* İstatistikler */
-        .stats-bar {
-            display: flex; gap: 40px; padding-top: 20px; border-top: 1px solid #333; width: 100%; justify-content: center;
-        }
-        .stat-item { text-align: center; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #fff; display: block; }
-        .stat-label { font-size: 12px; color: #888; }
-
-        /* GÖNDERİLER */
-        .section-title { color: #24caac; margin-bottom: 20px; padding-left: 10px; border-left: 4px solid #24caac; }
-        .feed-post { background: #1a1a1a; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .post-header img { width: 40px; height: 40px; border-radius: 50%; }
-        .post-content { margin-bottom: 15px; line-height: 1.5; font-size: 15px; }
-
     </style>
 </head>
 <body>
 
     <header>
-        <h1 onclick="window.location.href='pylsmgemini.html'">Just MSKU</h1>
-        <a href="pylsmgemini.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Geri Dön</a>
+        <div class="header-title">
+            <i class="fa-solid fa-arrow-left back-btn" id="mainBackBtn" onclick="goHome()"></i>
+            <span id="headerText">Mesajlar</span>
+        </div>
+        <div id="chatUserHeader" style="display:none; align-items:center; gap:10px;">
+            <img id="chatHeaderImg" src="" style="width:30px; height:30px; border-radius:50%; display:none;">
+            <span id="chatHeaderName"></span>
+        </div>
     </header>
 
-    <div class="container">
-        
-        <div class="profile-card">
-            <img id="uImg" src="" class="avatar-circle">
-            
-            <div id="uName" class="user-name">Kullanıcı Adı</div>
-            <div id="uDept" class="user-dept">Bölüm Bilgisi</div>
-            
-            <div id="uBio" class="bio-text">Biyografi yükleniyor...</div>
-
-            <div class="interaction-btns">
-                <button class="btn-action btn-follow" onclick="toggleFollow(this)">Takip Ediliyor</button>
-                <button id="msgBtn" class="btn-action btn-msg">Mesaj Gönder</button>
-            </div>
-
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <span id="sPost" class="stat-value">0</span>
-                    <span class="stat-label">Gönderi</span>
-                </div>
-                <div class="stat-item">
-                    <span id="sFollowers" class="stat-value">0</span>
-                    <span class="stat-label">Takipçi</span>
-                </div>
-                <div class="stat-item">
-                    <span id="sFollowing" class="stat-value">0</span>
-                    <span class="stat-label">Takip</span>
-                </div>
+    <div class="chat-container">
+        <div id="userListArea" class="user-list-area">
+            <div id="usersContainer">
+                <div class="empty-state">Kullanıcılar yükleniyor...</div>
             </div>
         </div>
 
-        <h3 class="section-title">Paylaşımlar</h3>
-        <div id="userPosts">
+        <div id="chatArea" class="chat-area">
+            <div class="messages-box" id="messagesBox">
+                <div class="empty-state">Sohbet başlatmak için bir kullanıcı seçin.</div>
             </div>
 
+            <div class="input-area" id="inputArea" style="display:none;">
+                <input type="text" id="msgInput" class="msg-input" placeholder="Mesaj yazın...">
+                <button class="send-btn" onclick="sendMessage()">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <script>
-        // --- SANAL VERİTABANI ---
-        const mockDatabase = {
-            "kaya": {
-                name: "Kaya Pulat",
-                dept: "İnşaat Mühendisliği",
-                img: "https://i.pravatar.cc/150?img=69",
-                bio: "Betonarme candır, gerisi heyecandır. 🏗️ MSKU '25",
-                stats: { post: 15, followers: 432, following: 120 },
-                posts: [
-                    "Statik finali çok zordu, geçen var mı?",
-                    "Kampüs kütüphanesinde kahve otomatı yine bozuk :("
-                ]
-            },
-            "emir": {
-                name: "Emir Ova",
-                dept: "Tıp Fakültesi",
-                img: "https://i.pravatar.cc/150?img=62",
-                bio: "Tıp okumak pişmanlık değildir, uykusuzluktur. 🩺 🚑",
-                stats: { post: 8, followers: 850, following: 300 },
-                posts: [
-                    "Nöbet çıkışı Kötekli havası...",
-                    "Anatomi labında bugün ilginç şeyler öğrendik."
-                ]
-            }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, where, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
+            authDomain: "justmsku.firebaseapp.com",
+            projectId: "justmsku",
+            storageBucket: "justmsku.firebasestorage.app",
+            messagingSenderId: "424626283802",
+            appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
         };
 
-        // --- SAYFA YÜKLENİNCE ÇALIŞAN KOD ---
-        window.onload = function() {
-            // 1. URL'den 'kisi' parametresini al
-            const params = new URLSearchParams(window.location.search);
-            const userId = params.get('kisi'); // örn: "kaya"
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-            // 2. Veritabanından veriyi bul
-            const user = mockDatabase[userId];
+        let currentUser = null;
+        let currentChatUser = null; 
+        let messagesUnsubscribe = null; 
 
+        // --- GİRİŞ KONTROLÜ ---
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                // 3. Verileri Ekrana Bas
-                document.getElementById('uName').innerText = user.name;
-                document.getElementById('uDept').innerText = user.dept;
-                document.getElementById('uImg').src = user.img;
-                document.getElementById('uBio').innerText = user.bio;
-                
-                document.getElementById('sPost').innerText = user.stats.post;
-                document.getElementById('sFollowers').innerText = user.stats.followers;
-                document.getElementById('sFollowing').innerText = user.stats.following;
-
-                // --- GÜNCELLEME: Mesaj Butonunu Ayarla ---
-                // Butona tıklandığında ana sayfaya git ve 'openChat' parametresi ile kullanıcının ID'sini gönder
-                const msgBtn = document.getElementById('msgBtn');
-                msgBtn.onclick = function() {
-                    window.location.href = `pylsmgemini.html?openChat=${userId}`;
-                };
-
-                // 4. Gönderileri Listele
-                const postsContainer = document.getElementById('userPosts');
-                user.posts.forEach(text => {
-                    const postHTML = `
-                        <div class="feed-post">
-                            <div class="post-header">
-                                <img src="${user.img}">
-                                <div><strong>${user.name}</strong><div style="font-size: 12px; color: #888;">Yakın zamanda</div></div>
-                            </div>
-                            <div class="post-content">${text}</div>
-                        </div>`;
-                    postsContainer.innerHTML += postHTML;
-                });
-
+                currentUser = user;
+                loadUsers();
             } else {
-                document.querySelector('.container').innerHTML = "<h2 style='text-align:center; margin-top:50px;'>Kullanıcı Bulunamadı :(</h2>";
+                window.location.href = "login.html";
             }
-        };
+        });
 
-        function toggleFollow(btn) {
-            if (btn.innerText === "Takip Ediliyor") {
-                btn.innerText = "Takip Et";
-                btn.style.background = "#333";
-                btn.style.color = "#24caac";
-                btn.style.border = "1px solid #24caac";
-            } else {
-                btn.innerText = "Takip Ediliyor";
-                btn.style.background = "#24caac";
-                btn.style.color = "#000";
-                btn.style.border = "none";
+        // --- KULLANICILARI LİSTELE ---
+        async function loadUsers() {
+            const container = document.getElementById('usersContainer');
+            try {
+                const q = query(collection(db, "users"));
+                const snapshot = await getDocs(q);
+                
+                container.innerHTML = "";
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state">Kayıtlı başka kullanıcı yok.</div>';
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const u = doc.data();
+                    if (u.uid === currentUser.uid) return;
+
+                    const img = u.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+                    
+                    const div = document.createElement('div');
+                    div.className = 'user-item';
+                    div.onclick = () => openChat(u);
+                    div.innerHTML = `
+                        <img src="${img}" class="user-avatar">
+                        <div class="user-info">
+                            <h4>${u.username}</h4>
+                            <p>Mesaj göndermek için dokun</p>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error("Kullanıcılar yüklenemedi:", error);
             }
         }
+
+        // --- SOHBETİ AÇ ---
+        window.openChat = function(targetUser) {
+            currentChatUser = targetUser;
+
+            // Mobilde görünüm değişimi
+            if (window.innerWidth < 768) {
+                document.getElementById('userListArea').style.display = 'none';
+                document.getElementById('chatArea').style.display = 'flex';
+                const backBtn = document.getElementById('mainBackBtn');
+                backBtn.onclick = closeChatMobile;
+                backBtn.className = "fa-solid fa-chevron-left back-btn";
+            }
+
+            // Header güncelleme
+            document.getElementById('headerText').style.display = 'none';
+            const chatHeader = document.getElementById('chatUserHeader');
+            chatHeader.style.display = 'flex';
+            document.getElementById('chatHeaderName').innerText = targetUser.username;
+            document.getElementById('chatHeaderImg').src = targetUser.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+            document.getElementById('chatHeaderImg').style.display = 'block';
+
+            document.getElementById('inputArea').style.display = 'flex';
+            
+            // Mesajları getir
+            loadMessages(targetUser.uid);
+        }
+
+        // --- MESAJLARI CANLI YÜKLE (İÇ İÇE KLASÖR YAPISI: Subcollection) ---
+        function loadMessages(targetUid) {
+            const box = document.getElementById('messagesBox');
+            box.innerHTML = '<div class="empty-state">Yükleniyor...</div>';
+
+            // 1. Oda Kimliği Oluştur (uid1_uid2 formatında)
+            const ids = [currentUser.uid, targetUid].sort();
+            const chatId = ids[0] + "_" + ids[1];
+
+            if (messagesUnsubscribe) messagesUnsubscribe();
+
+            // 2. DOĞRU ADRES: chats -> [ODA_NO] -> messages
+            const messagesRef = collection(db, "chats", chatId, "messages");
+            const q = query(messagesRef, orderBy("timestamp", "asc"));
+
+            messagesUnsubscribe = onSnapshot(q, (snapshot) => {
+                box.innerHTML = ""; 
+                
+                if (snapshot.empty) {
+                    box.innerHTML = '<div class="empty-state">Henüz mesaj yok. Merhaba de! 👋</div>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const msg = docSnap.data();
+                    const isMe = msg.senderId === currentUser.uid;
+                    
+                    // Okundu olarak işaretle (eğer mesaj benim değilse)
+                    if (!isMe && !msg.isRead) {
+                        markAsRead(chatId, docSnap.id);
+                    }
+
+                    const time = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "...";
+
+                    const div = document.createElement('div');
+                    div.className = `message ${isMe ? 'sent' : 'received'}`;
+                    div.innerHTML = `
+                        ${msg.text}
+                        <span class="msg-time">${time}</span>
+                    `;
+                    box.appendChild(div);
+                });
+
+                // En alta kaydır
+                box.scrollTop = box.scrollHeight;
+            }, (error) => {
+                console.error("Mesaj yükleme hatası:", error);
+                box.innerHTML = `<div class="error-message">Mesajlar yüklenemedi: ${error.message}</div>`;
+            });
+        }
+
+        // --- MESAJ GÖNDER ---
+        window.sendMessage = async function() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            
+            if (!text || !currentChatUser) return;
+
+            input.value = ""; 
+
+            const ids = [currentUser.uid, currentChatUser.uid].sort();
+            const chatId = ids[0] + "_" + ids[1];
+
+            try {
+                // Mesajı direkt chats -> [ODA_NO] -> messages altına ekle
+                const messagesRef = collection(db, "chats", chatId, "messages");
+                
+                await addDoc(messagesRef, {
+                    senderId: currentUser.uid,
+                    receiverId: currentChatUser.uid,
+                    text: text,
+                    isRead: false,
+                    timestamp: serverTimestamp()
+                });
+            } catch (error) {
+                console.error("Mesaj hatası:", error);
+                alert("Mesaj gönderilemedi: " + error.message);
+            }
+        }
+
+        // --- OKUNDU OLARAK İŞARETLE ---
+        async function markAsRead(chatId, docId) {
+            try {
+                const msgRef = doc(db, "chats", chatId, "messages", docId);
+                await updateDoc(msgRef, { isRead: true });
+            } catch (e) {
+                console.log("Okundu güncelleme hatası", e);
+            }
+        }
+
+        // --- MOBİL MENÜ ---
+        window.closeChatMobile = function() {
+            document.getElementById('userListArea').style.display = 'block';
+            document.getElementById('chatArea').style.display = 'none';
+            document.getElementById('chatUserHeader').style.display = 'none';
+            document.getElementById('headerText').style.display = 'block';
+            
+            const backBtn = document.getElementById('mainBackBtn');
+            backBtn.onclick = goHome;
+            backBtn.className = "fa-solid fa-arrow-left back-btn";
+            
+            if (messagesUnsubscribe) messagesUnsubscribe();
+            currentChatUser = null;
+        }
+
+        window.goHome = function() {
+            window.location.href = "pylsmgemini.html"; 
+        }
+
+        // Enter tuşu desteği
+        document.getElementById('msgInput').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+
     </script>
 </body>
 </html>
