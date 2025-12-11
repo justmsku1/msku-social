@@ -7,117 +7,135 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <link rel="stylesheet" href="style.css">
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){ emailjs.init("CYIIX3kfQyoPUedSP"); })();
+    </script>
+
     <style>
-        /* --- GENEL AYARLAR --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-        body { background-color: #000; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
-
-        /* HEADER */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #1a1a1a; border-bottom: 1px solid #333; height: 70px; flex-shrink: 0; position: sticky; top: 0; z-index: 1000; }
-        header h1 { color: #24caac; font-size: 20px; cursor: pointer; }
-        .back-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 13px; transition: 0.3s; }
-        .back-btn:hover { background: #24caac; color: black; }
-
-        /* PROFİL KARTI */
+        /* --- PROFİL SAYFASINA ÖZEL DÜZELTMELER --- */
+        /* Bu stiller style.css'de genel olmadığı için buraya ekliyoruz, ama değişken kullanıyoruz */
+        
         .container { max-width: 800px; margin: 0 auto; width: 100%; padding: 20px 10px; }
-        .profile-card { background: #1a1a1a; border: 1px solid #333; border-radius: 15px; padding: 30px 15px; display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; position: relative; }
+        
+        .profile-card { 
+            background: var(--bg-panel); 
+            border: 1px solid var(--border-color); 
+            border-radius: 15px; 
+            padding: 30px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            position: relative; 
+        }
         
         .avatar-container { position: relative; margin-bottom: 15px; }
-        .avatar-circle { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #24caac; background-color: #fff; }
-        .edit-photo-btn { position: absolute; bottom: 5px; right: 5px; background: #24caac; color: #000; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.2s; }
+        .avatar-circle { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 3px solid var(--accent); 
+            background-color: #fff; 
+        }
+        .edit-photo-btn { 
+            position: absolute; bottom: 5px; right: 5px; 
+            background: var(--accent); color: var(--accent-text); 
+            border: none; width: 30px; height: 30px; border-radius: 50%; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s; 
+        }
         
         .photo-options { display: flex; gap: 10px; margin-bottom: 15px; }
-        .photo-opt-btn { font-size: 12px; cursor: pointer; color: #aaa; background: none; border: none; }
-        .photo-opt-btn:hover { color: #fff; text-decoration: underline; }
+        .photo-opt-btn { font-size: 12px; cursor: pointer; color: var(--text-sub); background: none; border: none; }
+        .photo-opt-btn:hover { color: var(--text-main); text-decoration: underline; }
         .delete-btn:hover { color: #ff4b4b; }
 
-        .user-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; color: #fff; text-align: center; }
-        .user-title { font-size: 14px; color: #24caac; margin-bottom: 5px; font-weight: 600; letter-spacing: 1px;}
-        .user-email { font-size: 12px; color: #888; margin-bottom: 20px; font-family: monospace; background: #222; padding: 2px 8px; border-radius: 5px;}
+        .user-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; color: var(--text-main); text-align: center; }
+        .user-title { font-size: 14px; color: var(--accent); margin-bottom: 5px; font-weight: 600; letter-spacing: 1px;}
+        .user-email { 
+            font-size: 12px; color: var(--text-sub); margin-bottom: 20px; 
+            font-family: monospace; background: var(--bg-hover); 
+            padding: 2px 8px; border-radius: 5px; 
+        }
 
         .bio-section { width: 100%; max-width: 500px; text-align: center; margin-bottom: 20px; }
-        .bio-text { color: #ccc; line-height: 1.5; font-size: 14px; min-height: 30px; }
-        .bio-input { width: 100%; background: #000; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; resize: none; display: none; font-size: 14px; text-align: center; }
-        .edit-bio-btn { background: #333; color: #24caac; border: 1px solid #24caac; padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-top: 10px; }
+        .bio-text { color: var(--text-sub); line-height: 1.5; font-size: 14px; min-height: 30px; }
+        .bio-input { 
+            width: 100%; background: var(--bg-input); 
+            border: 1px solid var(--border-color); color: var(--text-main); 
+            padding: 10px; border-radius: 8px; resize: none; 
+            display: none; font-size: 14px; text-align: center; margin-bottom: 10px;
+        }
+        .edit-bio-btn { 
+            background: var(--bg-hover); color: var(--accent); 
+            border: 1px solid var(--accent); padding: 5px 15px; 
+            border-radius: 15px; cursor: pointer; font-size: 12px; 
+        }
 
-        /* GİZLİLİK VE İSTEKLER BUTONU */
-        .privacy-controls { display: flex; gap: 15px; margin-top: 15px; align-items: center; }
-        .privacy-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #ccc; cursor: pointer; background: #222; padding: 8px 15px; border-radius: 20px; border: 1px solid #333; }
-        .privacy-toggle input { display: none; } /* Checkbox'ı gizle */
+        /* GİZLİLİK VE İSTEKLER */
+        .privacy-controls { display: flex; gap: 15px; margin-top: 15px; align-items: center; justify-content: center; }
+        .privacy-toggle { 
+            display: flex; align-items: center; gap: 8px; font-size: 13px; 
+            color: var(--text-sub); cursor: pointer; background: var(--bg-hover); 
+            padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border-color); 
+        }
+        .privacy-toggle input { display: none; }
         .toggle-icon { width: 30px; height: 16px; background: #555; border-radius: 10px; position: relative; transition: 0.3s; }
         .toggle-icon::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; background: white; border-radius: 50%; transition: 0.3s; }
-        .privacy-toggle input:checked + .toggle-icon { background: #24caac; }
+        .privacy-toggle input:checked + .toggle-icon { background: var(--accent); }
         .privacy-toggle input:checked + .toggle-icon::after { left: 16px; }
 
-        .requests-btn { background: #24caac; color: #000; border: none; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .requests-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .requests-btn { 
+            background: var(--accent); color: var(--accent-text); border: none; 
+            padding: 8px 15px; border-radius: 20px; font-size: 13px; 
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; 
+        }
         .badge { background: #ff4b4b; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 5px; display: none; }
 
         /* İSTATİSTİKLER */
-        .stats-bar { display: flex; gap: 20px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #333; width: 100%; justify-content: center; flex-wrap: wrap; }
-        .stat-item { text-align: center; cursor: pointer; padding: 10px 15px; border-radius: 10px; min-width: 80px; }
-        .stat-item.active { background: rgba(36, 202, 172, 0.1); border-bottom: 2px solid #24caac; }
-        .stat-value { font-size: 18px; font-weight: bold; color: #fff; display: block; }
-        .stat-label { font-size: 12px; color: #888; }
+        .stats-bar { 
+            display: flex; gap: 20px; margin-top: 20px; padding-top: 20px; 
+            border-top: 1px solid var(--border-color); width: 100%; 
+            justify-content: center; flex-wrap: wrap; 
+        }
+        .stat-item { 
+            text-align: center; cursor: pointer; padding: 10px 15px; 
+            border-radius: 10px; min-width: 80px; color: var(--text-main);
+        }
+        .stat-item:hover { background: var(--bg-hover); }
+        .stat-item.active { background: rgba(36, 202, 172, 0.1); border-bottom: 2px solid var(--accent); }
+        .stat-value { font-size: 18px; font-weight: bold; display: block; }
+        .stat-label { font-size: 12px; color: var(--text-sub); }
 
-        /* SEKME İÇERİKLERİ */
+        /* TABS */
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .section-title { color: var(--accent); margin-bottom: 15px; padding-left: 10px; border-left: 4px solid var(--accent); font-size: 16px; }
+        .empty-msg { text-align: center; padding: 30px; color: var(--text-sub); font-size: 14px; }
 
-        /* GÖNDERİ OLUŞTURMA */
-        .create-post-box { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        .create-post-box textarea { width: 100%; background: #000; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; resize: none; min-height: 80px; margin-bottom: 10px; outline: none; }
-        .post-tools { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 10px; }
-        .media-upload-btn { cursor: pointer; color: #24caac; font-size: 18px; padding: 5px; }
-        .post-btn { background: #24caac; color: #000; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; }
-        .image-preview-container { display: none; position: relative; margin-bottom: 10px; }
-        .image-preview-container img { width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; border: 1px solid #333; }
-        .remove-img-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
-
-        /* FEED POST TASARIMI */
-        .section-title { color: #24caac; margin-bottom: 15px; padding-left: 10px; border-left: 4px solid #24caac; font-size: 16px; }
-        .feed-post { background: #1a1a1a; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; position: relative; transition: 0.3s; }
-        .feed-post.pinned { border: 1px solid #24caac; box-shadow: 0 0 10px rgba(36,202,172,0.1); order: -1; }
-        .post-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .user-info-group { display: flex; align-items: center; gap: 10px; }
-        .user-info-group img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .post-content { margin-bottom: 15px; line-height: 1.5; font-size: 14px; white-space: pre-wrap; }
-        .post-image img { width: 100%; border-radius: 10px; margin-top: 5px; border: 1px solid #333; }
-        .post-actions { display: flex; gap: 20px; color: #888; border-top: 1px solid #333; padding-top: 10px; margin-top: 10px; }
-        .action-btn { cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 13px; }
-        .action-btn:hover { color: #24caac; }
-        .action-btn.liked { color: #ff4b4b; }
-
-        /* Menüler */
-        .options-menu { display: none; position: absolute; background: #222; border: 1px solid #444; border-radius: 8px; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .options-menu.active { display: flex; flex-direction: column; }
-        .option-item { padding: 10px; color: #ccc; font-size: 13px; cursor: pointer; text-decoration: none; }
-        .option-item:hover { background: #333; color: #fff; }
-        .option-item.danger { color: #ff4b4b; border-top: 1px solid #333; }
-
-        /* LİSTE STİLLERİ */
-        .user-list-item, .request-list-item { display: flex; align-items: center; justify-content: space-between; background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; }
-        .user-list-info { display: flex; align-items: center; gap: 10px; }
+        /* LİSTE STİLLERİ (Takipçiler vb.) */
+        .user-list-item, .request-list-item { 
+            display: flex; align-items: center; justify-content: space-between; 
+            background: var(--bg-panel); padding: 15px; border-radius: 12px; 
+            margin-bottom: 10px; border: 1px solid var(--border-color); cursor: pointer; 
+        }
+        .user-list-info { display: flex; align-items: center; gap: 10px; color: var(--text-main); }
         .user-list-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .user-list-btn { background: #333; border: 1px solid #555; color: #fff; padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 12px; }
+        .user-list-btn { 
+            background: var(--bg-hover); border: 1px solid var(--border-color); 
+            color: var(--text-main); padding: 5px 15px; border-radius: 15px; 
+            cursor: pointer; font-size: 12px; 
+        }
         
-        /* İSTEK BUTONLARI */
         .req-actions { display: flex; gap: 5px; }
         .req-btn { padding: 5px 10px; border-radius: 15px; border: none; font-size: 12px; cursor: pointer; font-weight: bold; }
-        .req-accept { background: #24caac; color: #000; }
+        .req-accept { background: var(--accent); color: var(--accent-text); }
         .req-reject { background: #ff4b4b; color: #fff; }
 
-        .empty-msg { text-align: center; padding: 30px; color: #555; font-size: 14px; }
-
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #333; text-align: center; max-height: 80vh; overflow-y: auto;}
-        .share-contact { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #222; margin-bottom: 5px; border-radius: 8px; cursor: pointer; }
-        .share-info { display: flex; align-items: center; gap: 10px; }
-        .share-info img { width: 30px; height: 30px; border-radius: 50%; }
-
-        /* --- MOBİL UYUMLULUK --- */
         @media (max-width: 768px) {
             .container { padding: 10px; width: 100%; }
             .profile-card { padding: 20px 10px; }
@@ -133,7 +151,16 @@
 
     <header>
         <h1 onclick="window.location.href='pylsmgemini.html'">Just MSKU</h1>
-        <a href="pylsmgemini.html" class="back-btn"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
+        
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:18px; color:var(--accent);">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+            
+            <a href="pylsmgemini.html" class="back-btn" style="background:var(--bg-hover); color:var(--text-main); border:1px solid var(--border-color); padding: 5px 10px; border-radius: 20px; text-decoration:none; font-size:13px;">
+                <i class="fa-solid fa-house"></i> Ana Sayfa
+            </a>
+        </div>
     </header>
 
     <div class="container">
@@ -153,6 +180,7 @@
             <div class="user-name" id="profileNameDisplay">Yükleniyor...</div>
             <div class="user-title">MSKU</div>
             <div id="profileEmailDisplay" class="user-email">...</div>
+
             <div class="bio-section">
                 <p id="bioText" class="bio-text">Henüz bir biyografi eklenmedi.</p>
                 <textarea id="bioInput" class="bio-input" rows="3"></textarea>
@@ -283,6 +311,26 @@
             }
         });
 
+        // --- TEMA SİSTEMİ ---
+        window.addEventListener('load', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') { document.body.classList.add('light-mode'); }
+            updateThemeIcon();
+        });
+        window.toggleTheme = function() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateThemeIcon();
+        }
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                if (document.body.classList.contains('light-mode')) { icon.className = 'fa-solid fa-sun'; icon.style.color = '#ff9800'; } 
+                else { icon.className = 'fa-solid fa-moon'; icon.style.color = 'var(--accent)'; }
+            }
+        }
+
         // --- 1. PROFİL VERİLERİ ---
         function loadProfileData() {
             const imgElement = document.getElementById('profilePic');
@@ -292,80 +340,48 @@
             const bioInp = document.getElementById('bioInput');
             bioSec.innerText = myUser.bio || "Henüz bir biyografi eklenmedi.";
             bioInp.value = myUser.bio || "";
-
-            // --- MAİL ADRESİNİ YAZDIR ---
             document.getElementById('profileEmailDisplay').innerText = myUser.email || "";
-
-            // Gizli Hesap Toggle Durumu
             const toggle = document.getElementById('privateAccountToggle');
             toggle.checked = myUser.isPrivate === true;
         }
 
-        // --- 2. GİZLİ HESAP & İSTEKLER ---
-        
         window.togglePrivateAccount = async function() {
             const toggle = document.getElementById('privateAccountToggle');
             const isPrivate = toggle.checked;
             try {
                 await updateDoc(doc(db, "users", currentUserUid), { isPrivate: isPrivate });
-                alert(isPrivate ? "Hesabın artık GİZLİ. Takipçilerini onaylaman gerekecek." : "Hesabın artık HERKESE AÇIK.");
+                alert(isPrivate ? "Hesabın artık GİZLİ." : "Hesabın artık HERKESE AÇIK.");
             } catch (error) {
                 console.error("Ayar değiştirilemedi:", error);
                 toggle.checked = !isPrivate;
             }
         }
 
-        // --- İSTEKLERİ DİNLEME (DÜZELTİLEN KISIM) ---
         function checkFollowRequests() {
-            // SADECE 'friendRequests' TABLOSUNA BAKIYORUZ
-            // Şart: toUid == BENİM ID'M
-            const q = query(
-                collection(db, "friendRequests"), 
-                where("toUid", "==", currentUserUid)
-            );
-
+            const q = query(collection(db, "friendRequests"), where("toUid", "==", currentUserUid));
             onSnapshot(q, (snap) => {
                 const badge = document.getElementById('reqBadge');
-                if(!snap.empty) {
-                    badge.innerText = snap.size;
-                    badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
-                }
+                if(!snap.empty) { badge.innerText = snap.size; badge.style.display = 'inline-block'; } 
+                else { badge.style.display = 'none'; }
             });
         }
 
-        // --- İSTEK LİSTESİNİ AÇMA (DÜZELTİLEN KISIM) ---
         window.openRequestsModal = async function() {
             document.getElementById('requestsModal').style.display = 'flex';
             const listDiv = document.getElementById('requestsList');
             listDiv.innerHTML = '<div class="empty-msg">Yükleniyor...</div>';
-
-            // friendRequests tablosundan çekiyoruz
-            const q = query(
-                collection(db, "friendRequests"), 
-                where("toUid", "==", currentUserUid)
-            );
-            
+            const q = query(collection(db, "friendRequests"), where("toUid", "==", currentUserUid));
             const snap = await getDocs(q);
-
             listDiv.innerHTML = '';
-            if(snap.empty) {
-                listDiv.innerHTML = '<div style="color:#888; text-align:center;">Bekleyen istek yok.</div>';
-                return;
-            }
-
+            if(snap.empty) { listDiv.innerHTML = '<div style="color:var(--text-sub); text-align:center;">Bekleyen istek yok.</div>'; return; }
             snap.forEach(async (d) => {
                 const reqData = d.data();
                 const reqId = d.id;
-                const requesterUid = reqData.fromUid; // İstek gönderen kişinin ID'si
-                
+                const requesterUid = reqData.fromUid; 
                 const uDoc = await getDoc(doc(db, "users", requesterUid));
                 if(uDoc.exists()) {
                     const uData = uDoc.data();
                     const uImg = uData.photoURL || defaultAvatar;
-
-                    // HTML oluştururken processRequest'e requesterUid parametresini de gönderiyoruz
                     listDiv.innerHTML += `
                         <div class="request-list-item" id="req-${reqId}">
                             <div class="user-list-info" onclick="window.location.href='takip.html?kisi=${requesterUid}'">
@@ -376,119 +392,67 @@
                                 <button class="req-btn req-accept" onclick="processRequest('${reqId}', '${requesterUid}', true)">Onayla</button>
                                 <button class="req-btn req-reject" onclick="processRequest('${reqId}', '${requesterUid}', false)">Reddet</button>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 }
             });
         }
 
-        // --- İSTEĞİ İŞLEME (DÜZELTİLEN KISIM) ---
         window.processRequest = async function(reqId, requesterUid, isAccepted) {
             const item = document.getElementById(`req-${reqId}`);
             if(item) item.style.opacity = '0.5';
-
             try {
                 if (isAccepted) {
-                    // KABUL EDİLDİYSE: relationships tablosuna YENİ KAYIT ekle
                     await addDoc(collection(db, "relationships"), {
-                        followerUid: requesterUid, // O beni takip ediyor
-                        followingUid: currentUserUid, // Ben onu kabul ettim
-                        status: 'accepted',
-                        timestamp: serverTimestamp()
+                        followerUid: requesterUid, followingUid: currentUserUid, status: 'accepted', timestamp: serverTimestamp()
                     });
-                    updateStats(currentUserUid); // Takipçi sayısını artır
+                    updateStats(currentUserUid);
                 } 
-                
-                // HER İKİ DURUMDA DA: friendRequests tablosundan sil
                 await deleteDoc(doc(db, "friendRequests", reqId));
-                
                 if(item) item.remove();
-
-                // Liste boşaldı mı kontrol et
                 const listDiv = document.getElementById('requestsList');
-                if(listDiv.children.length === 0) {
-                     listDiv.innerHTML = '<div style="color:#888; text-align:center;">Bekleyen istek yok.</div>';
-                }
-
+                if(listDiv.children.length === 0) listDiv.innerHTML = '<div style="color:var(--text-sub); text-align:center;">Bekleyen istek yok.</div>';
             } catch(e) {
-                console.error(e);
-                alert("İşlem sırasında hata oluştu.");
-                if(item) item.style.opacity = '1';
+                console.error(e); alert("İşlem sırasında hata oluştu."); if(item) item.style.opacity = '1';
             }
         }
 
-        // --- 3. İSTATİSTİKLER ---
         async function updateStats(uid) {
             const qPosts = query(collection(db, "posts"), where("uid", "==", uid));
             const sPosts = await getDocs(qPosts);
             document.getElementById('statPostCount').innerText = sPosts.size;
-
-            const qFollowers = query(
-                collection(db, "relationships"), 
-                where("followingUid", "==", uid),
-                where("status", "==", "accepted")
-            );
+            const qFollowers = query(collection(db, "relationships"), where("followingUid", "==", uid), where("status", "==", "accepted"));
             const sFollowers = await getDocs(qFollowers);
             document.getElementById('statFollowerCount').innerText = sFollowers.size;
-
-            const qFollowing = query(
-                collection(db, "relationships"), 
-                where("followerUid", "==", uid),
-                where("status", "==", "accepted")
-            );
+            const qFollowing = query(collection(db, "relationships"), where("followerUid", "==", uid), where("status", "==", "accepted"));
             const sFollowing = await getDocs(qFollowing);
             document.getElementById('statFollowingCount').innerText = sFollowing.size;
         }
 
-        // --- 4. SEKME GEÇİŞLERİ ---
         window.switchTab = function(tabName) {
             document.querySelectorAll('.stat-item').forEach(i => i.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
-            
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById('content-' + tabName).classList.add('active');
-
             if (tabName === 'followers') loadLists('followers');
             if (tabName === 'following') loadLists('following');
         }
 
-        // --- 5. LİSTE YÜKLEME ---
         async function loadLists(type) {
             const container = document.getElementById(type + 'ListContainer');
             container.innerHTML = '<div class="empty-msg">Yükleniyor...</div>';
-
             let q;
-            if (type === 'followers') {
-                q = query(
-                    collection(db, "relationships"), 
-                    where("followingUid", "==", currentUserUid),
-                    where("status", "==", "accepted")
-                );
-            } else {
-                q = query(
-                    collection(db, "relationships"), 
-                    where("followerUid", "==", currentUserUid),
-                    where("status", "==", "accepted")
-                );
-            }
-
+            if (type === 'followers') q = query(collection(db, "relationships"), where("followingUid", "==", currentUserUid), where("status", "==", "accepted"));
+            else q = query(collection(db, "relationships"), where("followerUid", "==", currentUserUid), where("status", "==", "accepted"));
             const snapshot = await getDocs(q);
             container.innerHTML = '';
-
-            if (snapshot.empty) {
-                container.innerHTML = `<div class="empty-msg">${type === 'followers' ? 'Henüz takipçin yok.' : 'Kimseyi takip etmiyorsun.'}</div>`;
-                return;
-            }
-
+            if (snapshot.empty) { container.innerHTML = `<div class="empty-msg">${type === 'followers' ? 'Henüz takipçin yok.' : 'Kimseyi takip etmiyorsun.'}</div>`; return; }
             snapshot.forEach(async (docSnap) => {
                 const rel = docSnap.data();
                 const targetUid = type === 'followers' ? rel.followerUid : rel.followingUid;
-                
                 const userDoc = await getDoc(doc(db, "users", targetUid));
                 if(userDoc.exists()) {
                     const uData = userDoc.data();
                     const uImg = uData.photoURL || defaultAvatar;
-                    
                     const html = `
                         <div class="user-list-item" onclick="window.location.href='takip.html?kisi=${targetUid}'">
                             <div class="user-list-info">
@@ -498,8 +462,7 @@
                             <button class="user-list-btn" onclick="event.stopPropagation(); removeConnection('${docSnap.id}', '${type}')">
                                 ${type === 'followers' ? 'Çıkar' : 'Takipten Çık'}
                             </button>
-                        </div>
-                    `;
+                        </div>`;
                     container.insertAdjacentHTML('beforeend', html);
                 }
             });
@@ -513,27 +476,17 @@
             }
         }
 
-        // --- 6. GÖNDERİLERİ ÇEK ---
         function loadMyPosts() {
             const feed = document.getElementById('myFeedContainer');
             const q = query(collection(db, "posts"), where("uid", "==", currentUserUid));
-            
             onSnapshot(q, (snapshot) => {
                 feed.innerHTML = '';
                 document.getElementById('statPostCount').innerText = snapshot.size;
-
-                if (snapshot.empty) {
-                    feed.innerHTML = '<div class="empty-msg">Henüz gönderi paylaşmadın.</div>';
-                    return;
-                }
-
+                if (snapshot.empty) { feed.innerHTML = '<div class="empty-msg">Henüz gönderi paylaşmadın.</div>'; return; }
                 let posts = [];
                 snapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
                 posts.sort((a, b) => b.timestamp - a.timestamp);
-
-                posts.forEach(post => {
-                    createPostHTML(post.id, post);
-                });
+                posts.forEach(post => { createPostHTML(post.id, post); });
             });
         }
 
@@ -543,28 +496,25 @@
             newPostDiv.className = 'feed-post'; 
             newPostDiv.id = postId;
             if(post.isPinned) newPostDiv.classList.add('pinned'); 
-
-            let imageHTML = post.image ? `<div class="post-image"><img src="${post.image}"></div>` : '';
-            
-            let dateStr = "";
-            if (post.timestamp && post.timestamp.toDate) {
-                 dateStr = post.timestamp.toDate().toLocaleString("tr-TR");
-            } else if (post.timestamp) {
-                 dateStr = new Date(post.timestamp).toLocaleString("tr-TR");
+            let imageHTML = "";
+            if (post.mediaUrl) { 
+                if (post.type === 'video') imageHTML = `<video src="${post.mediaUrl}" controls class="post-image" style="background:#000; width:100%; max-height:400px;"></video>`; 
+                else imageHTML = `<img src="${post.mediaUrl}" class="post-image">`; 
+            } else if (post.image) {
+                imageHTML = `<img src="${post.image}" class="post-image">`; 
             }
-            
+            let dateStr = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleDateString("tr-TR") : "";
             const liked = (post.likedBy && post.likedBy.includes(auth.currentUser.uid));
             const likeClass = liked ? 'liked' : '';
             const likeIcon = liked ? 'fa-solid' : 'fa-regular';
-
             newPostDiv.innerHTML = `
                 <div class="post-header">
                     <div class="user-info-group">
                         <img src="${post.userImg || defaultAvatar}">
-                        <div><strong>${post.username}</strong><div style="font-size:12px; color:#888;">${dateStr}</div></div>
+                        <div><strong>${post.username}</strong><div style="font-size:12px; color:var(--text-sub);">${dateStr}</div></div>
                     </div>
                     <div class="post-options">
-                        <button class="action-btn" onclick="toggleMenu('menu-${postId}')"><i class="fa-solid fa-ellipsis"></i></button>
+                        <button class="options-btn" onclick="toggleMenu('menu-${postId}')"><i class="fa-solid fa-ellipsis"></i></button>
                         <div id="menu-${postId}" class="options-menu">
                             <div class="option-item" onclick="editPost('${postId}', '${post.text}')">Düzenle</div>
                             <div class="option-item" onclick="pinPost('${postId}', ${post.isPinned})">${post.isPinned ? 'Kaldır' : 'Sabitle'}</div>
@@ -572,21 +522,15 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="post-content" id="content-${postId}">${post.text}</div>
                 ${imageHTML}
-                
                 <div class="post-actions">
                     <div class="action-btn ${likeClass}" onclick="toggleLike('${postId}')"><i class="${likeIcon} fa-heart"></i> <span>${post.likes || 0}</span></div>
                     <div class="action-btn" onclick="openShareModal('${postId}')"><i class="fa-solid fa-share-nodes"></i> Paylaş</div>
-                </div>
-            `;
-            
-            if(post.isPinned) feed.prepend(newPostDiv);
-            else feed.appendChild(newPostDiv);
+                </div>`;
+            if(post.isPinned) feed.prepend(newPostDiv); else feed.appendChild(newPostDiv);
         }
 
-        // --- 7. DİĞER FONKSİYONLAR ---
         window.toggleLike = async function(postId) {
             const postRef = doc(db, "posts", postId);
             const postSnap = await getDoc(postRef);
@@ -595,39 +539,26 @@
                 const uid = auth.currentUser.uid;
                 let likes = post.likes || 0;
                 let likedBy = post.likedBy || [];
-
-                if (likedBy.includes(uid)) {
-                    likes--;
-                    likedBy = likedBy.filter(id => id !== uid);
-                } else {
-                    likes++;
-                    likedBy.push(uid);
-                }
+                if (likedBy.includes(uid)) { likes--; likedBy = likedBy.filter(id => id !== uid); } 
+                else { likes++; likedBy.push(uid); }
                 await updateDoc(postRef, { likes: likes, likedBy: likedBy });
             }
         }
-
         window.deleteMyPost = async function(postId) {
             if(confirm("Silmek istediğine emin misin?")) await deleteDoc(doc(db, "posts", postId));
         }
-
         window.pinPost = async function(postId, currentStatus) {
             await updateDoc(doc(db, "posts", postId), { isPinned: !currentStatus });
             document.getElementById(`menu-${postId}`).classList.remove('active');
         }
-
         window.editPost = async function(postId, oldText) {
             const newText = prompt("Düzenle:", oldText);
             if (newText && newText !== oldText) await updateDoc(doc(db, "posts", postId), { text: newText });
             document.getElementById(`menu-${postId}`).classList.remove('active');
         }
-
-        window.toggleMenu = function(menuId) {
-            document.getElementById(menuId).classList.toggle('active');
-        }
-        
+        window.toggleMenu = function(menuId) { document.getElementById(menuId).classList.toggle('active'); }
         window.onclick = function(event) {
-            if (!event.target.closest('.action-btn') && !event.target.closest('.options-menu')) {
+            if (!event.target.closest('.options-btn') && !event.target.closest('.options-menu')) {
                 document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('active'));
             }
             if (event.target.id === 'shareModal') closeShareModal();
@@ -656,19 +587,14 @@
             const text = document.getElementById('postInput').value;
             if (text.trim() === "" && !currentPostImageSrc) return alert("Boş gönderi paylaşamazsınız.");
             await addDoc(collection(db, "posts"), {
-                uid: myUser.uid,
-                username: myUser.username,
-                userImg: myUser.photoURL || defaultAvatar,
-                text: text,
-                image: currentPostImageSrc,
-                timestamp: new Date(),
-                likes: 0, likedBy: [], isPinned: false
+                uid: myUser.uid, username: myUser.username, userImg: myUser.photoURL || defaultAvatar,
+                text: text, image: currentPostImageSrc, timestamp: new Date(), likes: 0, likedBy: [], isPinned: false
             });
             document.getElementById('postInput').value = "";
             removeImage();
         }
 
-        // PAYLAŞIM (SOHBETE GÖNDERME - GÜNCELLENDİ)
+        // PAYLAŞIM (SOHBETE GÖNDERME)
         let currentPostIdToShare = null;
         window.openShareModal = function(postId) {
             currentPostIdToShare = postId;
@@ -679,93 +605,48 @@
             document.getElementById('shareModal').style.display = 'none';
             currentPostIdToShare = null;
         }
-
-        // Paylaşım listesini (Takip Ettiklerimi) Yükle
         async function loadShareList() {
             const list = document.getElementById('shareModalList');
-            list.innerHTML = '<div style="text-align:center;color:#888;">Yükleniyor...</div>';
-            
-            // Sadece takip ettiğim (accepted) kişilere gönderebilirim
-            const q = query(
-                collection(db, "relationships"), 
-                where("followerUid", "==", currentUserUid), // Ben takipçiyim
-                where("status", "==", "accepted")
-            );
-            
+            list.innerHTML = '<div style="text-align:center; color:var(--text-sub);">Yükleniyor...</div>';
+            const q = query(collection(db, "relationships"), where("followerUid", "==", currentUserUid), where("status", "==", "accepted"));
             const snap = await getDocs(q);
             list.innerHTML = '';
-            
-            if(snap.empty) {
-                list.innerHTML = '<div style="text-align:center; padding:10px; color:#888;">Takip ettiğin kimse yok.</div>';
-                return;
-            }
-
+            if(snap.empty) { list.innerHTML = '<div style="text-align:center; padding:10px; color:var(--text-sub);">Takip ettiğin kimse yok.</div>'; return; }
             snap.forEach(async (d) => {
                 const rel = d.data();
-                // Takip ettiğim kişinin verisini çek (followingUid)
                 const u = await getDoc(doc(db, "users", rel.followingUid));
-                
                 if(u.exists()) {
                     const ud = u.data();
                     const uImg = ud.photoURL || defaultAvatar;
-                    
                     list.innerHTML += `
-                        <div class="share-contact" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+                        <div class="share-contact" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--border-color);">
                             <div class="share-info" style="display:flex; align-items:center; gap:10px;">
                                 <img src="${uImg}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
                                 <span>${ud.username}</span>
                             </div>
-                            <button class="user-list-btn" onclick="shareWithContact('${ud.username}', '${ud.uid}')" style="background:#24caac; border:none; padding:5px 15px; border-radius:15px; font-weight:bold; cursor:pointer;">
+                            <button class="user-list-btn" onclick="shareWithContact('${ud.username}', '${ud.uid}')" style="background:var(--accent); border:none; padding:5px 15px; border-radius:15px; font-weight:bold; cursor:pointer; color:var(--accent-text);">
                                 Gönder
                             </button>
-                        </div>
-                    `;
+                        </div>`;
                 }
             });
         }
-
-        // Gönderiyi Sohbet Mesajı Olarak İlet
         window.shareWithContact = async function(contactName, targetUid) {
-            if (!currentPostIdToShare) return;
-
+            if (!currentPostIdToShare) { alert("Hata: Gönderi seçilemedi."); return; }
             try {
-                // A) Gönderi verisini çek
                 const pDoc = await getDoc(doc(db, "posts", currentPostIdToShare));
-                if (!pDoc.exists()) {
-                    alert("Hata: Gönderi bulunamadı.");
-                    return;
-                }
+                if (!pDoc.exists()) { alert("Hata: Gönderi bulunamadı."); return; }
                 const pData = pDoc.data();
-
-                // B) Sohbet Odası ID'sini Oluştur
                 const roomId = [currentUserUid, targetUid].sort().join("_");
-
-                // C) Mesaj Olarak Kaydet
                 await addDoc(collection(db, "chats", roomId, "messages"), {
-                    senderId: currentUserUid,
-                    timestamp: serverTimestamp(),
-                    isSharedPost: true, // Bu bir paylaşımdır
-                    likes: 0,
-                    likedBy: [],
-                    postData: {
-                        id: currentPostIdToShare,
-                        text: pData.text || "",
-                        media: pData.mediaUrl || pData.image || null, // mediaUrl yoksa image kullan
-                        type: pData.type || 'text',
-                        owner: pData.username
-                    }
+                    senderId: currentUserUid, recipientId: targetUid, timestamp: serverTimestamp(), isRead: false, isSharedPost: true,
+                    postData: { id: currentPostIdToShare, owner: pData.username, userImg: pData.userImg || defaultAvatar, text: pData.text || "", media: pData.mediaUrl || pData.image || null, type: pData.type || 'text' }
                 });
-
                 alert(`${contactName} kişisine gönderildi!`);
                 closeShareModal();
-
-            } catch (error) {
-                console.error("Paylaşım hatası:", error);
-                alert("Gönderilirken bir hata oluştu.");
-            }
+            } catch (error) { console.error(error); alert("Hata oluştu."); }
         }
 
-        // PROFİL DÜZENLEME
         window.uploadPhoto = function(input) {
             if (input.files[0]) {
                 const reader = new FileReader();
