@@ -126,149 +126,163 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    // fetchSignInMethodsForEmail fonksiyonunu içeri aktardık (KAYIT HATASI ÇÖZÜMÜ)
+    import { getAuth, createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // Gerekli Firestore fonksiyonları eklendi
 
-        // --- EMAILJS BAŞLATMA ---
-        // Senin PUBLIC KEY'in
-        emailjs.init("0HFAh7CQIeDet-qKg"); 
+    // --- EMAILJS BAŞLATMA ---
+    emailjs.init("0HFAh7CQIeDet-qKg"); 
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
-            authDomain: "justmsku.firebaseapp.com",
-            projectId: "justmsku",
-            storageBucket: "justmsku.firebasestorage.app",
-            messagingSenderId: "424626283802",
-            appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
+        authDomain: "justmsku.firebaseapp.com",
+        projectId: "justmsku",
+        storageBucket: "justmsku.firebasestorage.app",
+        messagingSenderId: "424626283802",
+        appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        let generatedCode = null;
-        let tempUserData = {};
+    let generatedCode = null;
+    let tempUserData = {};
 
-        // --- ADIM 1: KOD GÖNDERME ---
-        document.getElementById('sendCodeBtn').addEventListener('click', async function() {
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const kvkkCheck = document.getElementById('kvkkCheckbox');
-            const errorDiv = document.getElementById('errorMsg1');
-            const btn = this;
+    function showError(element, msg) {
+        element.innerText = msg;
+        element.style.display = "block";
+        setTimeout(() => element.style.display = "none", 5000); 
+    }
 
-            // Kontroller
-            if (!kvkkCheck.checked) return alert("KVKK metnini onaylamanız gerekmektedir.");
-            if(username === "" || email === "" || password === "") return showError(errorDiv, "Lütfen tüm alanları doldurun.");
-            if (!email.endsWith("@posta.mu.edu.tr")) return showError(errorDiv, "Sadece @posta.mu.edu.tr uzantılı mailler kayıt olabilir.");
-            if (password.length < 6) return showError(errorDiv, "Şifre en az 6 karakter olmalıdır.");
 
-            btn.innerText = "Kontrol Ediliyor...";
-            btn.disabled = true;
+    // --- ADIM 1: KOD GÖNDERME (Firebase Auth Kontrolü Düzeltildi) ---
+    document.getElementById('sendCodeBtn').addEventListener('click', async function() {
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const kvkkCheck = document.getElementById('kvkkCheckbox');
+        const errorDiv = document.getElementById('errorMsg1');
+        const btn = this;
+        errorDiv.style.display = "none";
 
-            try {
-                // Veritabanı Kontrolü (Email zaten var mı?)
-                const q = query(collection(db, "users"), where("email", "==", email));
-                const querySnapshot = await getDocs(q);
+        // Kontroller
+        if (!kvkkCheck.checked) return showError(errorDiv, "KVKK metnini onaylamanız gerekmektedir.");
+        if(username === "" || email === "" || password === "") return showError(errorDiv, "Lütfen tüm alanları doldurun.");
+        if (!email.endsWith("@posta.mu.edu.tr")) return showError(errorDiv, "Sadece @posta.mu.edu.tr uzantılı mailler kayıt olabilir.");
+        if (password.length < 6) return showError(errorDiv, "Şifre en az 6 karakter olmalıdır.");
 
-                if (!querySnapshot.empty) {
-                    showError(errorDiv, "Bu e-posta adresi zaten sisteme kayıtlı.");
-                    btn.innerText = "Doğrulama Kodu Gönder";
-                    btn.disabled = false;
-                    return; 
-                }
+        btn.innerText = "Kontrol Ediliyor...";
+        btn.disabled = true;
 
-                // Kod Üret
-                generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-                tempUserData = { username, email, password };
-                
-                btn.innerText = "Kod Gönderiliyor...";
-
-                // --- EMAILJS AYARLARI ---
-                // Senin SERVICE ID ve TEMPLATE ID'n
-                const serviceID = "service_0z7sl3w"; 
-                const templateID = "template_qbjoucd"; 
-
-                const templateParams = {
-                    to_email: email,      
-                    to_name: username,    
-                    code: generatedCode   
-                };
-
-                emailjs.send(serviceID, templateID, templateParams)
-                    .then(() => {
-                        alert("Doğrulama kodu e-postanıza (" + email + ") gönderildi!");
-                        document.getElementById('step1').classList.add('hidden');
-                        document.getElementById('step2').classList.remove('hidden');
-                        document.getElementById('displayEmail').innerText = email;
-                    }, (err) => {
-                        console.error('EmailJS Hatası:', err);
-                        showError(errorDiv, "Kod gönderilemedi: " + JSON.stringify(err));
-                        btn.innerText = "Doğrulama Kodu Gönder";
-                        btn.disabled = false;
-                    });
-
-            } catch (error) {
-                console.error("Hata:", error);
-                showError(errorDiv, "Hata: " + error.message);
+        try {
+            // ✅ Firebase Auth'ta zaten kayıtlı mı? (Daha güvenli ve doğru yöntem)
+            const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+            if (signInMethods && signInMethods.length > 0) {
+                showError(errorDiv, "Bu e-posta adresi zaten sisteme kayıtlı.");
                 btn.innerText = "Doğrulama Kodu Gönder";
                 btn.disabled = false;
-            }
-        });
-
-        // --- ADIM 2: DOĞRULAMA VE KAYIT ---
-        document.getElementById('verifyAndRegisterBtn').addEventListener('click', async () => {
-            const userCode = document.getElementById('verificationCode').value;
-            const errorDiv = document.getElementById('errorMsg2');
-            const btn = document.getElementById('verifyAndRegisterBtn');
-
-            if (userCode !== generatedCode) {
-                showError(errorDiv, "Hatalı kod! Lütfen tekrar deneyin.");
                 return;
             }
+
+            // --- DEVAM ET: KOD GÖNDERME MANTIĞI ---
+            generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+            tempUserData = { username, email, password };
             
-            btn.innerText = "Kaydediliyor...";
-            btn.disabled = true;
+            btn.innerText = "Kod Gönderiliyor...";
 
-            try {
-                // Firebase Kayıt
-                const userCredential = await createUserWithEmailAndPassword(auth, tempUserData.email, tempUserData.password);
-                const user = userCredential.user;
+            const serviceID = "service_0z7sl3w"; 
+            const templateID = "template_qbjoucd"; 
 
-                // Firestore Kayıt
-                await setDoc(doc(db, "users", user.uid), {
-                    username: tempUserData.username,
-                    email: tempUserData.email,
-                    uid: user.uid,
-                    photoURL: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-                    searchKey: tempUserData.username.toLocaleLowerCase('tr'), 
-                    verified: true,
-                    isPrivate: false, 
-                    createdAt: serverTimestamp()
+            const templateParams = {
+                to_email: email,      
+                to_name: username,    
+                code: generatedCode   
+            };
+
+            emailjs.send(serviceID, templateID, templateParams)
+                .then(() => {
+                    // E-posta gönderimi başarılı
+                    alert("Doğrulama kodu e-postanıza (" + email + ") gönderildi!");
+                    document.getElementById('step1').classList.add('hidden');
+                    document.getElementById('step2').classList.remove('hidden');
+                    document.getElementById('displayEmail').innerText = email;
+                }, (err) => {
+                    // EmailJS hatası
+                    console.error('EmailJS Hatası:', err);
+                    showError(errorDiv, "Kod gönderilemedi. Sunucu hatası veya yanlış EmailJS ayarları.");
+                    btn.innerText = "Doğrulama Kodu Gönder";
+                    btn.disabled = false;
                 });
 
-                alert("Kayıt Başarılı! Giriş yapılıyor...");
-                window.location.href = "pylsmgemini.html"; // Yönlendirilecek sayfa
-
-            } catch (error) {
-                console.error(error);
-                btn.innerText = "Doğrula ve Kayıt Ol";
-                btn.disabled = false;
-                if(error.code === "auth/email-already-in-use") {
-                    alert("Bu e-posta adresi zaten kayıtlı.");
-                } else {
-                    showError(errorDiv, "Kayıt hatası: " + error.message);
-                }
-            }
-        });
-
-        function showError(element, msg) {
-            element.innerText = msg;
-            element.style.display = "block";
+        } catch (error) {
+            console.error("Hata:", error);
+            // Firebase Auth kontrolü bir hata fırlatırsa (örn: ağ hatası)
+            showError(errorDiv, "İşlem hatası: " + error.message);
+            btn.innerText = "Doğrulama Kodu Gönder";
+            btn.disabled = false;
         }
-    </script>
+    });
+
+
+    // --- ADIM 2: DOĞRULAMA VE KAYIT ---
+    document.getElementById('verifyAndRegisterBtn').addEventListener('click', async () => {
+        const userCode = document.getElementById('verificationCode').value;
+        const errorDiv = document.getElementById('errorMsg2');
+        const btn = document.getElementById('verifyAndRegisterBtn');
+        errorDiv.style.display = "none";
+
+        // Kod Kontrolü
+        if (userCode !== generatedCode) {
+            showError(errorDiv, "Hatalı kod! Lütfen tekrar deneyin veya geri dönün.");
+            return;
+        }
+        
+        btn.innerText = "Kaydediliyor...";
+        btn.disabled = true;
+
+        try {
+            // Adım 1: Firebase Auth Kaydı
+            const userCredential = await createUserWithEmailAndPassword(auth, tempUserData.email, tempUserData.password);
+            const user = userCredential.user;
+            
+            // Adım 2: Firestore Kaydı (Yetki kuralı burada tetiklenir)
+            await setDoc(doc(db, "users", user.uid), {
+                username: tempUserData.username,
+                email: tempUserData.email,
+                uid: user.uid,
+                photoURL: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                searchKey: tempUserData.username.toLocaleLowerCase('tr'), 
+                verified: true,
+                isPrivate: false, 
+                createdAt: serverTimestamp()
+            });
+
+            alert("Kayıt Başarılı! Giriş yapılıyor...");
+            window.location.href = "pylsmgemini.html"; // Yönlendirilecek sayfa
+
+        } catch (error) {
+            console.error(error);
+            btn.innerText = "Doğrula ve Kayıt Ol";
+            btn.disabled = false;
+            
+            let displayMsg = "Kayıt sırasında beklenmedik bir hata oluştu.";
+
+            if (error.code === "auth/email-already-in-use") {
+                 displayMsg = "Bu e-posta zaten kayıtlı. Lütfen giriş yapın.";
+            } else if (error.code === "permission-denied" || error.code === "internal") {
+                 displayMsg = "HATA: Sunucu izinleri yetersiz. Lütfen Firebase Rules'unuzu kontrol edin ve YAYINLAYIN.";
+            } else {
+                 displayMsg = "Hata: " + error.message;
+            }
+            
+            showError(errorDiv, displayMsg);
+        }
+    });
+
+</script>
 
 </body>
 </html>

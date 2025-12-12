@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // KAYIT HATASINI ÇÖZEN KURAL: Kullanıcı sadece kendi profilini (users/{UID}) oluşturabilir.
+    match /users/{userId} {
+      allow read: if request.auth != null; 
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Geri kalan kurallarınızı ekleyin
+    match /news/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.token.email == "abdulkadiroluc@posta.mu.edu.tr"; 
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    // Varsayılan kural: Güvenliği sağlamak için her şeyi kapatın
+    match /{document=**} {
+      allow read, write: if false; 
+    }
+  }
+}
