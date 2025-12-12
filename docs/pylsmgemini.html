@@ -205,6 +205,36 @@
         .comm-card.selected { border: 2px solid #ff4b4b; opacity: 0.8; }
         .comm-img { width: 100%; height: 120px; object-fit: cover; }
         .comm-content { padding: 15px; text-align: center; }
+
+        /* TOPLULUK ÖNERİLERİ (SAĞ KENAR PANELİ) */
+        .suggestion-comm { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:8px; border-radius:10px; background: transparent; cursor: pointer; }
+        .suggestion-comm:hover { background: var(--bg-hover); }
+        .suggestion-comm img { width:46px; height:46px; object-fit:cover; border-radius:8px; border:1px solid var(--border-color); }
+        .suggestion-comm .comm-info { flex:1; min-width:0; }
+        .suggestion-comm .comm-info .name { font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .suggestion-comm .comm-info .meta { font-size:12px; color:var(--text-sub); }
+        .join-small-btn { padding:6px 10px; border-radius:12px; border:none; cursor:pointer; font-size:13px; }
+        .join-small-btn.join { background:var(--accent); color:var(--accent-text); }
+        .join-small-btn.leave { background:#ff4b4b; color:#fff; }
+
+        /* ORTADAKİ TOPLULUK ÖNERİLERİ (AKIŞ İÇİ) */
+        .center-suggestion-wrap { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding:12px; margin-bottom:16px; }
+        .center-suggestion-title { font-size:14px; color:var(--text-main); font-weight:800; margin-bottom:8px; }
+        .center-suggestion-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap:8px; }
+        .center-suggestion-card { background: transparent; border-radius:8px; padding:6px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+        .center-suggestion-card { position: relative; }
+        .center-suggestion-card img { width:100%; height:70px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color); margin-bottom:6px; }
+        .center-suggestion-card .comm-name { font-weight:700; font-size:12px; color:var(--text-main); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .center-suggestion-card .comm-meta { font-size:11px; color:var(--text-sub); margin-bottom:6px; }
+        .center-suggestion-card .join-btn { width:100%; padding:6px; border-radius:6px; border:none; cursor:pointer; font-size:13px; }
+        .center-suggestion-card .join-btn.join { background:var(--accent); color:var(--accent-text); }
+        .center-suggestion-card .join-btn.leave { background:#ff4b4b; color:#fff; }
+        .center-suggestion-card .dismiss-btn { position:absolute; top:6px; right:6px; background:transparent; border:none; color:var(--text-sub); font-size:14px; cursor:pointer; }
+        .center-suggestion-card .dismiss-btn:hover { color:var(--text-main); }
+        .center-joined-card { display:flex; flex-direction:column; align-items:center; gap:6px; border-radius:6px; padding:6px; }
+        .center-joined-card img { width:100%; height:56px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color); }
+        .center-joined-card .comm-name { font-size:12px; font-weight:700; }
+        .center-joined-card .leave-small { padding:6px 8px; font-size:12px; border-radius:6px; border:none; background:#ff4b4b; color:#fff; cursor:pointer; width:100%; }
         
         /* GÜNCELLENEN TOPLULUK DETAY SAYFASI */
         .comm-detail-header { position: relative; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
@@ -279,6 +309,13 @@
             .comm-info-bar { justify-content: center; margin-top: -40px; padding: 0 10px; }
             .join-btn { width: 100%; margin-top: 10px; }
         }
+
+        /* Haberler submenu */
+        .nav-item.has-sub { flex-direction: column; align-items: flex-start; padding-bottom: 6px; }
+        .nav-sub { display: none; margin-top: 6px; padding-left: 8px; width: 100%; }
+        .nav-sub .nav-sub-item { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; color:var(--text-sub); cursor:pointer; font-size:13px; }
+        .nav-sub .nav-sub-item:hover { background:var(--bg-hover); color:var(--text-main); }
+        .sub-toggle { position:absolute; right:10px; top:12px; background:none; border:none; color:var(--text-sub); cursor:pointer; }
     </style>
 </head>
 <body>
@@ -346,6 +383,14 @@
                             <i class="fa-solid fa-image"></i> Medya
                         </label>
                         <button class="post-btn" onclick="sharePost()">Paylaş</button>
+                    </div>
+                </div>
+
+                <!-- Ortadaki Topluluk Önerileri (Instagram tarzı öneriler) -->
+                <div id="centerCommunitySuggestions" class="center-suggestion-wrap" style="display:none;">
+                    <div class="center-suggestion-title">Topluluk Önerileri</div>
+                    <div id="centerSuggestionGrid" class="center-suggestion-grid">
+                        <div style="color:#888; font-size:13px; text-align:center; padding:10px; grid-column:1/-1;">Yükleniyor...</div>
                     </div>
                 </div>
 
@@ -504,6 +549,8 @@
                 </div>
             </div>
 
+                <!-- Sidebar community suggestions removed (now shown in-feed) -->
+
             <div id="contactsBox" class="suggestion-box" style="display: none;">
                 <div class="suggestion-title" style="color:#24caac;">KİŞİLERİM</div>
                 
@@ -646,6 +693,8 @@
         // DEĞİŞKENLER
         let myUser = null;
         let currentUserUid = null;
+        let postsRenderedForCenter = 0;
+        let centerSuggestionsInserted = false;
         let currentChatPartnerUid = null;
         let activeChatUnsubscribe = null;
         let replyingTo = null;
@@ -721,6 +770,7 @@
                 loadTimeline(); 
                 loadExploreMixed(); 
                 loadCommunities();
+                loadCommunitySuggestions();
 
                 // --- URL'DEN SOHBET YAKALAMA ---
                 const params = new URLSearchParams(window.location.search);
@@ -736,6 +786,20 @@
                     window.history.replaceState({}, document.title, "pylsmgemini.html");
                 }
                 // -----------------------------------------------------
+
+                // URL'den section param ile açma (örn ?section=chat)
+                const sectionParam = params.get('section');
+                if (sectionParam) {
+                    showSection(sectionParam);
+                    window.history.replaceState({}, document.title, "pylsmgemini.html");
+                }
+
+            // Haberler submenu toggle
+            window.toggleHaberlerSub = function() {
+                const el = document.getElementById('haberlerSub');
+                if (!el) return;
+                el.style.display = el.style.display === 'block' ? 'none' : 'block';
+            }
 
             } else {
                 window.location.href = "login.html";
@@ -1073,7 +1137,9 @@
             await addDoc(collection(db, "communityMembers"), { communityId: commId, userId: currentUserUid, joinedAt: new Date() });
             await updateDoc(doc(db, "communities", commId), { memberCount: increment(1) });
             alert("Topluluğa katıldın!");
-            checkMembership(commId); 
+            checkMembership(commId);
+            // refresh suggestions so joined community is removed from recommended list
+            if (typeof loadCommunitySuggestions === 'function') loadCommunitySuggestions();
         }
 
         window.leaveCommunity = async function(commId, membershipDocId) {
@@ -1081,6 +1147,8 @@
             await deleteDoc(doc(db, "communityMembers", membershipDocId));
             await updateDoc(doc(db, "communities", commId), { memberCount: increment(-1) });
             checkMembership(commId);
+            // refresh suggestions in case community should reappear or be removed
+            if (typeof loadCommunitySuggestions === 'function') loadCommunitySuggestions();
         }
 
         window.toggleCommAdminMenu = function() { document.getElementById('commAdminMenu').classList.toggle('active'); }
@@ -1097,6 +1165,202 @@
             await deleteDoc(doc(db, "communities", commId));
             alert("Topluluk silindi.");
             closeCommunityDetail();
+        }
+
+        // --- TOPLULUK ÖNERİLERİ ---
+        window.loadCommunitySuggestions = async function() {
+            if(!currentUserUid) return;
+            try {
+                const joinedQ = query(collection(db, "communityMembers"), where("userId", "==", currentUserUid));
+                const joinedSnap = await getDocs(joinedQ);
+                const joinedIds = new Set(joinedSnap.docs.map(d => d.data().communityId));
+
+                const cQ = query(collection(db, "communities"), orderBy("memberCount", "desc"), limit(40));
+                const cSnap = await getDocs(cQ);
+
+                // load hidden suggestions for this user and filter them out
+                const hiddenQ = query(collection(db, "hiddenSuggestions"), where("userId", "==", currentUserUid));
+                const hiddenSnap = await getDocs(hiddenQ);
+                const hiddenIds = new Set(hiddenSnap.docs.map(d => d.data().communityId));
+
+                // Eğer ortadaki öneri ızgarası varsa oraya render et (Instagram benzeri)
+                const centerGrid = document.getElementById('centerSuggestionGrid');
+                if (centerGrid) {
+                    centerGrid.innerHTML = '';
+                    let added = 0;
+                    const maxShown = 12;
+                    const joinedDocs = [];
+                    const suggestedDocs = [];
+                    cSnap.forEach(docSnap => {
+                        const id = docSnap.id; const data = docSnap.data();
+                        if (hiddenIds.has(id)) return; // skip dismissed
+                        if (joinedIds.has(id)) joinedDocs.push({ id, data });
+                        else suggestedDocs.push({ id, data });
+                    });
+                    // First render joined communities as small tiles
+                    joinedDocs.forEach(d => {
+                        const card = renderCenterJoinedCard(centerGrid, d.id, d.data);
+                        if (card) centerGrid.appendChild(card);
+                    });
+                    // Then render suggested communities up to maxShown
+                    for (let i = 0; i < suggestedDocs.length && added < maxShown; i++) {
+                        const d = suggestedDocs[i];
+                        renderCenterSuggestionCard(centerGrid, d.id, d.data);
+                        added++;
+                    }
+                    if (added === 0) centerGrid.innerHTML = '<div style="color:#888; font-size:13px; text-align:center; padding:10px; grid-column:1/-1;">Yeni topluluk önerisi yok.</div>';
+                    console.log('loadCommunitySuggestions completed, added:', added);
+                    return;
+                }
+
+                // Fallback: sağ kenar kutularına render
+                const joinedContainer = document.getElementById('joinedCommunitiesList');
+                const suggestedContainer = document.getElementById('suggestedCommunitiesList');
+                if (!joinedContainer || !suggestedContainer) return;
+                joinedContainer.innerHTML = '';
+                suggestedContainer.innerHTML = '';
+
+                cSnap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    if (joinedIds.has(id)) {
+                        renderCommunitySuggestionRow('joinedCommunitiesList', id, data, true);
+                    } else {
+                        renderCommunitySuggestionRow('suggestedCommunitiesList', id, data, false);
+                    }
+                });
+
+                if (joinedContainer.children.length === 0) joinedContainer.innerHTML = '<div style="color:#888; font-size:13px; text-align:center; padding:10px;">Henüz katıldığın topluluk yok.</div>';
+                if (suggestedContainer.children.length === 0) suggestedContainer.innerHTML = '<div style="color:#888; font-size:13px; text-align:center; padding:10px;">Yeni topluluk yok.</div>';
+            } catch (e) {
+                console.error('loadCommunitySuggestions error', e);
+            }
+        }
+
+        function renderCenterSuggestionCard(gridEl, commId, data) {
+            const card = document.createElement('div');
+            card.className = 'center-suggestion-card';
+            const img = data.image || 'https://via.placeholder.com/300x150?text=Topluluk';
+            card.innerHTML = `
+                <button class="dismiss-btn">&times;</button>
+                <img src="${img}" alt="${data.name}">
+                <div class="comm-name">${data.name}</div>
+                <div class="comm-meta">${data.memberCount || 0} üye</div>
+                <button class="join-btn join">Katıl</button>
+            `;
+
+            const joinBtn = card.querySelector('.join-btn');
+            joinBtn.onclick = async (e) => {
+                e.stopPropagation();
+                // optimistic UI: remove suggestion and show joined small card immediately
+                const placeholderNext = card.nextSibling;
+                if (card.parentNode) card.parentNode.removeChild(card);
+                const joinedCard = renderCenterJoinedCard(gridEl, commId, data);
+                if (joinedCard) gridEl.prepend(joinedCard);
+                try {
+                    await joinCommunity(commId);
+                } catch (err) {
+                    console.error('joinCommunity failed', err);
+                    // revert optimistic change: remove joinedCard and reinsert suggestion
+                    if (joinedCard && joinedCard.parentNode) joinedCard.parentNode.removeChild(joinedCard);
+                    if (placeholderNext) gridEl.insertBefore(card, placeholderNext);
+                    else gridEl.appendChild(card);
+                    alert('Topluluğa katılamadı. Lütfen tekrar deneyin.');
+                }
+            };
+
+            const dismiss = card.querySelector('.dismiss-btn');
+            dismiss.onclick = async (e) => {
+                e.stopPropagation();
+                try {
+                    await dismissSuggestion(commId, card);
+                } catch (err) { console.error(err); }
+            };
+
+            card.onclick = () => { window.location.href = 'topluluk-sayfa.html?id=' + commId; };
+            gridEl.appendChild(card);
+        }
+
+        async function dismissSuggestion(commId, cardEl) {
+            try {
+                await addDoc(collection(db, 'hiddenSuggestions'), { userId: currentUserUid, communityId: commId, timestamp: serverTimestamp() });
+                if (cardEl && cardEl.parentNode) cardEl.parentNode.removeChild(cardEl);
+            } catch (e) { console.error('dismissSuggestion error', e); }
+        }
+
+        function renderCenterJoinedCard(gridEl, commId, data) {
+            const card = document.createElement('div');
+            card.className = 'center-joined-card';
+            const img = data.image || 'https://via.placeholder.com/300x150?text=Topluluk';
+            card.innerHTML = `
+                <img src="${img}" alt="${data.name}">
+                <div class="comm-name">${data.name}</div>
+                <button class="leave-small">Ayrıl</button>
+            `;
+
+            const btn = card.querySelector('button');
+            btn.onclick = async (e) => {
+                e.stopPropagation();
+                if (!confirm('Bu topluluktan ayrılmak istiyor musunuz?')) return;
+                try {
+                    const q = query(collection(db, 'communityMembers'), where('communityId', '==', commId), where('userId', '==', currentUserUid));
+                    const snaps = await getDocs(q);
+                    if (!snaps.empty) {
+                        await leaveCommunity(commId, snaps.docs[0].id);
+                        // remove card from grid
+                        if (card.parentNode) card.parentNode.removeChild(card);
+                    }
+                } catch (err) { console.error(err); }
+            };
+
+            card.onclick = () => { window.location.href = 'topluluk-sayfa.html?id=' + commId; };
+            return card;
+        }
+
+        function renderCommunitySuggestionRow(containerId, commId, data, isJoined) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+            const div = document.createElement('div');
+            div.className = 'suggestion-comm';
+            const img = data.image || 'https://via.placeholder.com/120x80?text=Topluluk';
+            div.innerHTML = `
+                <img src="${img}">
+                <div class="comm-info">
+                    <div class="name">${data.name}</div>
+                    <div class="meta">${data.memberCount || 0} üye</div>
+                </div>
+                <button class="join-small-btn ${isJoined ? 'leave' : 'join'}">${isJoined ? 'Ayrıl' : 'Katıl'}</button>
+            `;
+
+            const btn = div.querySelector('button');
+            btn.onclick = async (e) => {
+                e.stopPropagation();
+                if (isJoined) {
+                    try {
+                        const q = query(collection(db, "communityMembers"), where("communityId", "==", commId), where("userId", "==", currentUserUid));
+                        const snaps = await getDocs(q);
+                        if (!snaps.empty) {
+                            await leaveCommunity(commId, snaps.docs[0].id);
+                            // move to suggested
+                            isJoined = false;
+                            btn.className = 'join-small-btn join'; btn.innerText = 'Katıl';
+                            container.removeChild(div);
+                            document.getElementById('suggestedCommunitiesList').prepend(div);
+                        }
+                    } catch (err) { console.error(err); }
+                } else {
+                    try {
+                        await joinCommunity(commId);
+                        isJoined = true;
+                        btn.className = 'join-small-btn leave'; btn.innerText = 'Ayrıl';
+                        container.removeChild(div);
+                        document.getElementById('joinedCommunitiesList').prepend(div);
+                    } catch (err) { console.error(err); }
+                }
+            };
+
+            div.onclick = () => { window.location.href = 'topluluk-sayfa.html?id=' + commId; };
+            container.appendChild(div);
         }
 
         window.changeCommunityAdmin = async function() {
@@ -1826,6 +2090,11 @@
             
             onSnapshot(qPosts, (snapshot) => { 
                 feed.innerHTML = ''; 
+                // reset center suggestion insertion state for this render
+                postsRenderedForCenter = 0;
+                centerSuggestionsInserted = false;
+                const centerEl = document.getElementById('centerCommunitySuggestions');
+                if (centerEl) centerEl.style.display = 'none';
                 
                 if(snapshot.empty) { 
                     feed.innerHTML = '<div class="empty-msg">Henüz akışta gönderi yok.</div>'; 
@@ -1922,6 +2191,22 @@
             
             feed.appendChild(newPostDiv); 
             loadComments(postId); 
+            // center suggestions insertion logic (insert after N posts)
+            try {
+                postsRenderedForCenter++;
+                console.log('Post appended. postsRenderedForCenter=', postsRenderedForCenter);
+                const centerEl = document.getElementById('centerCommunitySuggestions');
+                if (!centerSuggestionsInserted && centerEl && postsRenderedForCenter >= 3) {
+                    console.log('Inserting center suggestions into feed');
+                    // insert right after the post we just appended
+                    const lastPost = feed.children[feed.children.length - 1];
+                    if (lastPost) feed.insertBefore(centerEl, lastPost.nextSibling);
+                    else feed.appendChild(centerEl);
+                    centerEl.style.display = 'block';
+                    centerSuggestionsInserted = true;
+                    if (typeof loadCommunitySuggestions === 'function') loadCommunitySuggestions();
+                }
+            } catch (e) { console.error(e); }
         }
 
         window.previewMedia = function(input) { 
