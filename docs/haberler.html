@@ -9,21 +9,63 @@
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
-       (function(){
-          // Senin Public Key'in
-          emailjs.init("0HFAh7CQIeDet-qKg");
-       })();
+        (function(){
+           // Senin Public Key'in
+           emailjs.init("0HFAh7CQIeDet-qKg");
+        })();
     </script>
 
     <link rel="stylesheet" href="style.css">
 
     <style>
         /* --- SAYFAYA ÖZEL DÜZEN AYARLARI --- */
+        :root {
+            /* Varsayımlar: Bu değişkenler style.css'te tanımlı olmalı */
+            --accent: #24caac;
+            --accent-text: #000;
+            --text-main: #fff;
+            --text-sub: #aaa;
+            --bg-panel: #111;
+            --border-color: #333;
+            --bg-input: #222;
+            --bg-hover: #1c1c1c;
+        }
+
+        /* LIGHT MODE */
+        body.light-mode {
+            --accent: #007bff;
+            --accent-text: #fff;
+            --text-main: #333;
+            --text-sub: #666;
+            --bg-panel: #f8f9fa;
+            --border-color: #ddd;
+            --bg-input: #eee;
+            --bg-hover: #e9ecef;
+        }
+
         .container { max-width: 800px; margin: 30px auto; width: 90%; padding-bottom: 50px; }
 
         /* BAŞLIK ALANI */
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .page-title { font-size: 28px; font-weight: bold; border-left: 5px solid var(--accent); padding-left: 15px; color: var(--text-main); }
+        .page-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+        }
+        .page-title { 
+            font-size: 28px; 
+            font-weight: bold; 
+            border-left: 5px solid var(--accent); 
+            padding-left: 15px; 
+            color: var(--text-main); 
+        }
+        
+        /* EKLE VE SİL BUTONLARINI İÇEREN GRUP */
+        .header-action-group {
+            display: flex;
+            gap: 10px; /* Butonlar arası boşluk */
+            align-items: center;
+        }
         
         .add-btn { 
             background: var(--accent); color: var(--accent-text); border: none; padding: 10px 25px; 
@@ -35,6 +77,7 @@
         /* HABER KARTLARI */
         .news-grid { display: flex; flex-direction: column; gap: 20px; }
         
+        .news-card-wrapper { position: relative; } /* Checkbox'ın container'ı */
         .news-card { 
             background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 15px; 
             overflow: hidden; display: flex; transition: 0.3s; cursor: pointer; position: relative;
@@ -54,8 +97,28 @@
         .action-icon { color: var(--text-sub); cursor: pointer; transition: 0.2s; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 50%; }
         .action-icon:hover { color: #fff; background: var(--accent); }
         .delete-icon:hover { background: #ff4b4b; color: #fff; }
+        
+        /* --- YENİ EKLENEN SİLME MODU STİLLERİ --- */
+        .admin-checkbox-container { position: absolute; top: 15px; left: 15px; z-index: 50; }
+        .delete-checkbox { width: 20px; height: 20px; cursor: pointer; transform: scale(1.2); }
+        
+        /* ÇOKLU SİLME BUTONU */
+        .bulk-delete-btn { 
+             background-color: #ff4444 !important; 
+             color: white !important;
+             font-weight: 600 !important;
+             padding: 10px 25px; 
+             border-radius: 25px;
+             
+             /* BUTON İÇİNDEKİ İÇERİK İÇİN YENİ HİZALAMA */
+             display: flex;
+             align-items: center;
+             justify-content: center;
+        }
+        .bulk-delete-btn:hover { opacity: 0.8; }
 
-        /* MODALLER */
+
+        /* MODALLER VE DİĞERLERİ (Mevcut stiller) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: var(--bg-panel); padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; border: 1px solid var(--border-color); position: relative; color: var(--text-main); }
         .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-sub); }
@@ -79,14 +142,17 @@
         .empty-msg { text-align: center; color: var(--text-sub); padding: 40px; font-size: 14px; }
 
         /* HEADER BUTONLARI */
-        .back-btn { background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.3s; font-size: 13px; font-weight: 600; }
-        .back-btn:hover { background: var(--accent); color: var(--accent-text); }
+        .header-controls a.back-btn { background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.3s; font-size: 13px; font-weight: 600; }
+        .header-controls a.back-btn:hover { background: var(--accent); color: var(--accent-text); }
 
         /* MOBİL UYUMU */
         @media (max-width: 768px) {
             .news-card { flex-direction: column; }
             .news-img { width: 100%; height: 180px; }
             .header-controls { gap: 5px; }
+            .news-actions { top: 5px; right: 5px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .header-action-group { width: 100%; justify-content: space-between; }
         }
     </style>
 </head>
@@ -99,7 +165,7 @@
             <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:18px; color:var(--accent);">
                 <i class="fa-solid fa-moon" id="themeIcon"></i>
             </button>
-
+            
             <a href="pylsmgemini.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Ana Sayfa</a>
         </div>
     </header>
@@ -107,9 +173,16 @@
     <div class="container">
         <div class="page-header">
             <div class="page-title">Kampüsten Haberler</div>
-            <button class="add-btn" onclick="openAddModal()">
-                <i class="fa-solid fa-plus"></i> Haber Ekle
-            </button>
+            
+            <div class="header-action-group">
+                
+                <button id="toggleDeleteModeBtn" onclick="toggleDeleteMode()" class="bulk-delete-btn" style="display:none;">
+                    <i class="fa-solid fa-trash-can"></i>&nbsp;Silme Modunu Aç
+                </button>
+                <button class="add-btn" onclick="openAddModal()">
+                    <i class="fa-solid fa-plus"></i> Haber Ekle
+                </button>
+            </div>
         </div>
 
         <div id="newsGrid" class="news-grid">
@@ -206,7 +279,12 @@
 
         let currentUser = null;
         let newsCache = {}; 
-
+        
+        // --- SİLME DEĞİŞKENLERİ ---
+        let isDeleteMode = false;
+        let selectedPosts = new Set();
+        const adminEmail = "abdulkadiroluc@posta.mu.edu.tr"; // Yönetici e-posta adresi düzeltildi
+        
         // --- TEMA SİSTEMİ ---
         window.addEventListener('load', () => {
             const savedTheme = localStorage.getItem('theme');
@@ -224,29 +302,39 @@
         function updateThemeIcon() {
             const icon = document.getElementById('themeIcon');
             if (icon) {
-                if (document.body.classList.contains('light-mode')) { 
-                    icon.className = 'fa-solid fa-sun'; 
-                    icon.style.color = '#ff9800'; 
-                } else { 
-                    icon.className = 'fa-solid fa-moon'; 
-                    icon.style.color = 'var(--accent)'; 
-                }
+                const isLight = document.body.classList.contains('light-mode');
+                icon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon'; 
+                icon.style.color = isLight ? '#ff9800' : 'var(--accent)'; 
             }
         }
 
+        // --- GİRİŞ KONTROLÜ VE YÜKLEME ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                setupAdminFeatures(); // Yönetici butonu gösterimi
                 loadNews();
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        // --- LİSTELEME VE OTOMATİK MODAL AÇMA ---
+        // --- YÖNETİCİ ÖZELLİKLERİNİ KURULUMU ---
+        function setupAdminFeatures() {
+            const btn = document.getElementById('toggleDeleteModeBtn');
+            // Butonu sadece yönetici e-posta adresiyle giriş yapılmışsa göster
+            if (currentUser && currentUser.email === adminEmail) {
+                btn.style.display = 'flex'; 
+            } else {
+                btn.style.display = 'none'; 
+            }
+        }
+
+        // --- LİSTELEME ---
         function loadNews() {
             const grid = document.getElementById('newsGrid');
             const q = query(collection(db, "news"), orderBy("timestamp", "desc"));
+            const isAdmin = currentUser && currentUser.email === adminEmail;
 
             onSnapshot(q, (snapshot) => {
                 grid.innerHTML = '';
@@ -263,15 +351,16 @@
                     const img = n.image || "https://via.placeholder.com/200x140?text=Just+MSKU";
                     const date = new Date(n.timestamp?.seconds * 1000).toLocaleDateString("tr-TR");
 
+                    // Aksiyon butonları (Düzenle/Sil/Bildir)
                     let actions = "";
-                    if (currentUser && n.uid === currentUser.uid) {
+                    if (currentUser && n.uid === currentUser.uid) { // Haber sahibi ise
                         actions = `
                             <div class="news-actions">
                                 <i class="fa-solid fa-pen action-icon" onclick="event.stopPropagation(); openEditModal('${id}')"></i>
                                 <i class="fa-solid fa-trash action-icon delete-icon" onclick="event.stopPropagation(); deleteNews('${id}')"></i>
                             </div>
                         `;
-                    } else {
+                    } else if (!isAdmin) { // Haber sahibi değilse ve yönetici de değilse, bildir butonu
                         actions = `
                             <div class="news-actions">
                                 <i class="fa-solid fa-triangle-exclamation action-icon" 
@@ -280,195 +369,280 @@
                                 </i>
                             </div>`;
                     }
+                    
+                    // SİLME MODU CHECKBOX'I
+                    const checkboxHtml = isAdmin ? `
+                        <div class="admin-checkbox-container">
+                            <input 
+                                type="checkbox" 
+                                class="delete-checkbox" 
+                                style="display:${isDeleteMode ? 'block' : 'none'};" 
+                                onchange="togglePostSelection('${id}', this)"
+                            />
+                        </div>
+                    ` : '';
 
                     const html = `
-                        <div class="news-card" onclick="showDetail('${id}')">
-                            <img src="${img}" class="news-img">
-                            <div class="news-content">
-                                <div class="news-title">${n.title}</div>
-                                <div class="news-desc">${n.content}</div>
-                                <div class="news-meta">
-                                    <span><i class="fa-solid fa-user"></i> ${n.username || 'Anonim'}</span>
-                                    <span><i class="fa-regular fa-clock"></i> ${date}</span>
+                        <div class="news-card-wrapper">
+                            ${checkboxHtml}
+                            <div class="news-card" onclick="showDetail('${id}')">
+                                <img src="${img}" class="news-img">
+                                <div class="news-content">
+                                    <div class="news-title">${n.title}</div>
+                                    <div class="news-desc">${n.content}</div>
+                                    <div class="news-meta">
+                                        <span><i class="fa-solid fa-user"></i> ${n.username || 'Anonim'}</span>
+                                        <span><i class="fa-regular fa-clock"></i> ${date}</span>
+                                    </div>
                                 </div>
+                                ${actions}
                             </div>
-                            ${actions}
                         </div>
                     `;
                     grid.insertAdjacentHTML('beforeend', html);
                 });
 
-                // --- SİHİRLİ KISIM: URL'DE LINK VARSA OTOMATİK AÇ ---
-                // Link şuna benziyorsa: .../haberler.html?openPost=HABER_ID
+                // URL'de openPost varsa detayı açma (Mevcut koddan korundu)
                 const urlParams = new URLSearchParams(window.location.search);
                 const openPostId = urlParams.get('openPost');
-                
-                // Eğer URL'de ID varsa ve haber yüklendiyse, detayı aç
                 if (openPostId && newsCache[openPostId]) {
                     showDetail(openPostId);
                 }
             });
         }
 
-        // --- BİLDİRİ İŞLEMLERİ ---
-        window.openReportModal = function(id) {
-            document.getElementById('reportNewsId').value = id;
-            document.getElementById('reportDetail').value = ""; 
-            document.getElementById('reportModal').style.display = 'flex';
+        // --- YÖNETİCİ SİLME FONKSİYONLARI ---
+
+        // 1. Silme Modunu Açma/Kapama
+        window.toggleDeleteMode = function() {
+            if (!currentUser || currentUser.email !== adminEmail) return; // Yetki kontrolü
+
+            isDeleteMode = !isDeleteMode;
+            const btn = document.getElementById('toggleDeleteModeBtn');
+            const checkboxes = document.querySelectorAll('.delete-checkbox');
+            
+            selectedPosts.clear(); 
+
+            // Butonun görünümü ve işlevi
+            if (isDeleteMode) {
+                btn.innerHTML = `<i class="fa-solid fa-check"></i>&nbsp;Seçilenleri Sil (0)`;
+                btn.style.backgroundColor = 'var(--accent)'; // Yeşil/Accent Renk
+                btn.onclick = bulkDeletePosts; // Toplu silme atanır
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-trash-can"></i>&nbsp;Silme Modunu Aç`;
+                btn.style.backgroundColor = '#ff4444'; // Kırmızı Renk
+                btn.onclick = toggleDeleteMode; // Kendi fonksiyonu atanır
+            }
+
+            // Checkbox'ların görünürlüğünü ayarla
+            checkboxes.forEach(checkbox => {
+                checkbox.style.display = isDeleteMode ? 'block' : 'none';
+                checkbox.checked = false;
+            });
         }
 
-        window.submitReport = async function() {
-            const newsId = document.getElementById('reportNewsId').value;
-            const reason = document.getElementById('reportReasonSelect').value;
-            const detail = document.getElementById('reportDetail').value;
+        // 2. Haber Seçimi
+        window.togglePostSelection = function(postId, checkboxElement) {
+            const btn = document.getElementById('toggleDeleteModeBtn');
+            
+            if (checkboxElement.checked) {
+                selectedPosts.add(postId);
+            } else {
+                selectedPosts.delete(postId);
+            }
+            
+            btn.innerHTML = `<i class="fa-solid fa-check"></i>&nbsp;Seçilenleri Sil (${selectedPosts.size})`;
+        }
 
-            if (!newsId) return;
+        // 3. Toplu Silme İşlemi (Yönetici)
+        window.bulkDeletePosts = async function() {
+            if (!currentUser || currentUser.email !== adminEmail) return; 
+            if (selectedPosts.size === 0) return alert("Lütfen silinecek en az bir haber seçin.");
 
-            const btn = document.querySelector('#reportModal .add-btn');
-            const originalText = btn.innerText;
+            const confirmation = confirm(`${selectedPosts.size} adet haberi silmek istediğinizden emin misiniz?`);
+            if (!confirmation) return;
+
+            const btn = document.getElementById('toggleDeleteModeBtn');
+            const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerText = "Gönderiliyor...";
+            btn.innerText = "Siliniyor...";
+
+            const deletePromises = [];
+            selectedPosts.forEach(postId => {
+                const postRef = doc(db, "news", postId);
+                deletePromises.push(deleteDoc(postRef));
+            });
 
             try {
-                // Haber verilerini al
-                const n = newsCache[newsId];
-                const postOwner = n ? n.username : "Bilinmiyor";
-                const postContent = n ? n.content : "İçerik Bulunamadı";
-                const currentDate = new Date().toLocaleString("tr-TR");
-
-                // --- ÖZEL LINK OLUŞTURMA ---
-                // Bu linke tıklanınca, sayfa açılacak ve "?openPost=" sayesinde modal otomatik tetiklenecek
-                const newsLink = window.location.href.split('?')[0] + "?openPost=" + newsId;
-
-                // 1. Firebase'e Kaydet
-                await addDoc(collection(db, "reports"), {
-                    targetId: newsId,
-                    type: "news",
-                    reason: reason,
-                    detail: detail,
-                    reporterUid: currentUser.uid,
-                    reporterEmail: currentUser.email,
-                    timestamp: new Date()
-                });
-
-                // 2. EmailJS ile Mail Gönder
-                const templateParams = {
-                    reporter_email: currentUser.email,
-                    reason: reason,
-                    detail: detail,
-                    post_owner: postOwner,
-                    news_id: newsId,
-                    post_content: postContent,
-                    date: currentDate,
-                    news_link: newsLink,  // Tıklanabilir link
-                    to_email: "justmsku@gmail.com"
-                };
-                
-                const serviceID = "service_0z7sl3w"; 
-                const templateID = "template_phh0c1p"; 
-
-                await emailjs.send(serviceID, templateID, templateParams);
-
-                alert("Bildiriminiz iletildi! Teşekkürler.");
-                closeModal('reportModal');
-
+                await Promise.all(deletePromises);
+                alert(`${selectedPosts.size} adet haber başarıyla silindi.`);
+                toggleDeleteMode(); 
             } catch (error) {
-                console.error("Bildiri hatası:", error);
-                alert("Hata oluştu: " + error.message);
+                console.error("Toplu silme hatası:", error);
+                alert("Silme işlemi başarısız oldu. Yetki hatası olmadığından emin olun.");
             } finally {
                 btn.disabled = false;
-                btn.innerText = originalText;
+                // Butonun içeriği, toggleDeleteMode() tarafından güncellenecektir.
             }
         }
-
-        // --- DİĞER FONKSİYONLAR ---
-        window.saveNews = async function() {
-            const title = document.getElementById('newsTitle').value;
-            const content = document.getElementById('newsContent').value;
-            const file = document.getElementById('newsFile').files[0];
-            const editId = document.getElementById('editId').value;
-
-            if (!title || !content) return alert("Lütfen başlık ve içerik giriniz.");
-
-            let imgBase64 = null;
-            if (file) {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async function() {
-                    imgBase64 = reader.result;
-                    processSave(title, content, imgBase64, editId);
-                }
-            } else {
-                let oldImg = null;
-                if(editId && newsCache[editId]) oldImg = newsCache[editId].image;
-                processSave(title, content, oldImg, editId);
-            }
-        }
-
-        async function processSave(title, content, img, id) {
-            try {
-                if (id) {
-                    await updateDoc(doc(db, "news", id), {
-                        title: title, content: content, image: img 
-                    });
-                } else {
-                    await addDoc(collection(db, "news"), {
-                        title: title, content: content, image: img,
-                        uid: currentUser.uid, username: currentUser.email.split('@')[0], timestamp: new Date()
-                    });
-                }
-                closeModal('newsModal');
-            } catch (e) {
-                console.error(e); alert("İşlem başarısız.");
-            }
-        }
-
-        window.openEditModal = function(id) {
-            const n = newsCache[id];
-            if (!n) return;
-            document.getElementById('modalTitle').innerText = "Haberi Düzenle";
-            document.getElementById('editId').value = id;
-            document.getElementById('newsTitle').value = n.title;
-            document.getElementById('newsContent').value = n.content;
-            document.getElementById('newsFile').value = ""; 
-            document.getElementById('newsModal').style.display = 'flex';
-        }
-
+        
+        // --- TEKİL SİLME (Haber Sahibinin Kendi Silmesi) ---
         window.deleteNews = async function(id) {
-            if (confirm("Bu haberi silmek istediğine emin misin?")) {
-                await deleteDoc(doc(db, "news", id));
-            }
-        }
+             if (confirm("Bu haberi silmek istediğine emin misin?")) {
+                 await deleteDoc(doc(db, "news", id));
+             }
+         }
 
-        window.showDetail = function(id) {
-            const n = newsCache[id];
-            if (!n) return;
-            document.getElementById('detailImg').src = n.image || "https://via.placeholder.com/600x300?text=Just+MSKU";
-            document.getElementById('detailTitle').innerText = n.title;
-            document.getElementById('detailContent').innerText = n.content;
-            document.getElementById('detailAuthor').innerHTML = `<i class="fa-solid fa-user"></i> ${n.username || 'Anonim'}`;
-            document.getElementById('detailDate').innerHTML = `<i class="fa-regular fa-calendar"></i> ${new Date(n.timestamp?.seconds * 1000).toLocaleDateString("tr-TR")}`;
-            document.getElementById('detailModal').style.display = 'flex';
-        }
+        // --- DİĞER FONKSİYONLAR (Bildirim, Ekleme/Düzenleme) ---
+        
+        window.submitReport = async function() {
+             const newsId = document.getElementById('reportNewsId').value;
+             const reason = document.getElementById('reportReasonSelect').value;
+             const detail = document.getElementById('reportDetail').value;
 
-        window.openAddModal = function() {
-            document.getElementById('modalTitle').innerText = "Haber Ekle";
-            document.getElementById('editId').value = "";
-            document.getElementById('newsTitle').value = "";
-            document.getElementById('newsContent').value = "";
-            document.getElementById('newsFile').value = "";
-            document.getElementById('newsModal').style.display = 'flex';
-        }
+             if (!newsId) return;
 
-        window.closeModal = function(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
+             const btn = document.querySelector('#reportModal .add-btn');
+             const originalText = btn.innerText;
+             btn.disabled = true;
+             btn.innerText = "Gönderiliyor...";
 
-        window.onclick = function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
-            }
-        }
+             try {
+                 const n = newsCache[newsId];
+                 const postOwner = n ? n.username : "Bilinmiyor";
+                 const postContent = n ? n.content : "İçerik Bulunamadı";
+                 const currentDate = new Date().toLocaleString("tr-TR");
+
+                 const newsLink = window.location.href.split('?')[0] + "?openPost=" + newsId;
+
+                 // 1. Firebase'e Kaydet
+                 await addDoc(collection(db, "reports"), {
+                     targetId: newsId,
+                     type: "news",
+                     reason: reason,
+                     detail: detail,
+                     reporterUid: currentUser.uid,
+                     reporterEmail: currentUser.email,
+                     timestamp: new Date()
+                 });
+
+                 // 2. EmailJS ile Mail Gönder
+                 const templateParams = {
+                     reporter_email: currentUser.email,
+                     reason: reason,
+                     detail: detail,
+                     post_owner: postOwner,
+                     news_id: newsId,
+                     post_content: postContent,
+                     date: currentDate,
+                     news_link: newsLink,
+                     to_email: "justmsku@gmail.com"
+                 };
+                 
+                 const serviceID = "service_0z7sl3w"; 
+                 const templateID = "template_phh0c1p"; 
+
+                 await emailjs.send(serviceID, templateID, templateParams);
+
+                 alert("Bildiriminiz iletildi! Teşekkürler.");
+                 closeModal('reportModal');
+
+             } catch (error) {
+                 console.error("Bildiri hatası:", error);
+                 alert("Hata oluştu: " + error.message);
+             } finally {
+                 btn.disabled = false;
+                 btn.innerText = originalText;
+             }
+         }
+
+         window.saveNews = async function() {
+             const title = document.getElementById('newsTitle').value;
+             const content = document.getElementById('newsContent').value;
+             const file = document.getElementById('newsFile').files[0];
+             const editId = document.getElementById('editId').value;
+
+             if (!title || !content) return alert("Lütfen başlık ve içerik giriniz.");
+
+             let imgBase64 = null;
+             if (file) {
+                 const reader = new FileReader();
+                 reader.readAsDataURL(file);
+                 reader.onload = async function() {
+                     imgBase64 = reader.result;
+                     processSave(title, content, imgBase64, editId);
+                 }
+             } else {
+                 let oldImg = null;
+                 if(editId && newsCache[editId]) oldImg = newsCache[editId].image;
+                 processSave(title, content, oldImg, editId);
+             }
+         }
+
+         async function processSave(title, content, img, id) {
+             try {
+                 if (id) {
+                     await updateDoc(doc(db, "news", id), {
+                         title: title, content: content, image: img 
+                     });
+                 } else {
+                     await addDoc(collection(db, "news"), {
+                         title: title, content: content, image: img,
+                         uid: currentUser.uid, username: currentUser.email.split('@')[0], timestamp: new Date()
+                     });
+                 }
+                 closeModal('newsModal');
+             } catch (e) {
+                 console.error(e); alert("İşlem başarısız.");
+             }
+         }
+
+         window.openEditModal = function(id) {
+             const n = newsCache[id];
+             if (!n) return;
+             document.getElementById('modalTitle').innerText = "Haberi Düzenle";
+             document.getElementById('editId').value = id;
+             document.getElementById('newsTitle').value = n.title;
+             document.getElementById('newsContent').value = n.content;
+             document.getElementById('newsFile').value = ""; 
+             document.getElementById('newsModal').style.display = 'flex';
+         }
+
+         window.openReportModal = function(id) {
+             document.getElementById('reportNewsId').value = id;
+             document.getElementById('reportDetail').value = ""; 
+             document.getElementById('reportModal').style.display = 'flex';
+         }
+
+         window.showDetail = function(id) {
+             const n = newsCache[id];
+             if (!n) return;
+             document.getElementById('detailImg').src = n.image || "https://via.placeholder.com/600x300?text=Just+MSKU";
+             document.getElementById('detailTitle').innerText = n.title;
+             document.getElementById('detailContent').innerText = n.content;
+             document.getElementById('detailAuthor').innerHTML = `<i class="fa-solid fa-user"></i> ${n.username || 'Anonim'}`;
+             document.getElementById('detailDate').innerHTML = `<i class="fa-regular fa-calendar"></i> ${new Date(n.timestamp?.seconds * 1000).toLocaleDateString("tr-TR")}`;
+             document.getElementById('detailModal').style.display = 'flex';
+         }
+
+         window.openAddModal = function() {
+             document.getElementById('modalTitle').innerText = "Haber Ekle";
+             document.getElementById('editId').value = "";
+             document.getElementById('newsTitle').value = "";
+             document.getElementById('newsContent').value = "";
+             document.getElementById('newsFile').value = "";
+             document.getElementById('newsModal').style.display = 'flex';
+         }
+
+         window.closeModal = function(modalId) {
+             document.getElementById(modalId).style.display = 'none';
+         }
+
+         window.onclick = function(e) {
+             if (e.target.classList.contains('modal')) {
+                 e.target.style.display = 'none';
+             }
+         }
     </script>
 </body>
 </html>
