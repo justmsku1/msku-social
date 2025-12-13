@@ -124,8 +124,8 @@
             <div id="uBio" class="bio-text">...</div>
 
             <div class="interaction-btns">
-                <button id="followBtn" class="btn-action btn-follow" onclick="toggleFollow()">Takip Et</button>
-                <button id="msgBtn" class="btn-action btn-msg" onclick="goToChat()">Mesaj Gönder</button>
+                <button id="followBtn" class="btn-action btn-follow">Takip Et</button>
+                <button id="msgBtn" class="btn-action btn-msg">Mesaj Gönder</button>
             </div>
 
             <div class="stats-bar">
@@ -187,68 +187,79 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, serverTimestamp, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, serverTimestamp, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
-            authDomain: "justmsku.firebaseapp.com",
-            projectId: "justmsku",
-            storageBucket: "justmsku.firebasestorage.app",
-            messagingSenderId: "424626283802",
-            appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
+        authDomain: "justmsku.firebaseapp.com",
+        projectId: "justmsku",
+        storageBucket: "justmsku.firebasestorage.app",
+        messagingSenderId: "424626283802",
+        appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        let myUid = null;
-        let myUsername = null; // Şikayet için gerekli
-        let targetUid = null;
-        let isFollowing = false;
-        let relationshipId = null;
-        let targetUserData = null;
-        let followRequestSent = false;
-        let requestId = null;
-        const defaultAvatar = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+    let myUid = null;
+    let myUsername = null; 
+    let targetUid = null;
+    let isFollowing = false;
+    let relationshipId = null;
+    let targetUserData = null;
+    let followRequestSent = false;
+    let requestId = null;
+    const defaultAvatar = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
 
-        const params = new URLSearchParams(window.location.search);
-        targetUid = params.get('kisi');
+    const params = new URLSearchParams(window.location.search);
+    targetUid = params.get('kisi');
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                myUid = user.uid;
-                // BENİM KULLANICI BİLGİLERİMİ ÇEK (ŞİKAYET İÇİN)
-                const meDoc = await getDoc(doc(db, "users", myUid));
-                if(meDoc.exists()) {
-                    myUsername = meDoc.data().username;
-                }
+    // Başlangıçta mesaj butonunu gizle
+    document.getElementById('msgBtn').style.display = 'none';
 
-                if(!targetUid) { alert("Kullanıcı belirtilmedi!"); window.location.href='pylsmgemini.html'; return; }
-                if(myUid === targetUid) { window.location.href='profil.html'; return; } 
-
-                loadTargetProfile();
-            } else {
-                window.location.href = "login.html";
-            }
-        });
-
-        async function loadTargetProfile() {
-            const userDoc = await getDoc(doc(db, "users", targetUid));
-            if (!userDoc.exists()) {
-                document.querySelector('.container').innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Kullanıcı Bulunamadı.</h2>";
-                return;
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            myUid = user.uid;
+            const meDoc = await getDoc(doc(db, "users", myUid));
+            if(meDoc.exists()) {
+                myUsername = meDoc.data().username;
             }
 
-            targetUserData = userDoc.data();
-            document.getElementById('uName').innerText = targetUserData.username;
-            document.getElementById('uImg').src = targetUserData.photoURL || defaultAvatar;
-            document.getElementById('uBio').innerText = targetUserData.bio || "Biyografi yok.";
-            document.getElementById('uEmail').innerText = targetUserData.email || "";
+            if(!targetUid) { alert("Kullanıcı belirtilmedi!"); window.location.href='pylsmgemini.html'; return; }
+            if(myUid === targetUid) { window.location.href='profil.html'; return; } 
 
-            // Takip Durumunu Kontrol Et
+            loadTargetProfile();
+        } else {
+            window.location.href = "login.html";
+        }
+    });
+
+    async function loadTargetProfile() {
+        const userDoc = await getDoc(doc(db, "users", targetUid));
+        if (!userDoc.exists()) {
+            document.querySelector('.container').innerHTML = "<h2 style='text-align:center;margin-top:50px;'>Kullanıcı Bulunamadı.</h2>";
+            return;
+        }
+
+        targetUserData = userDoc.data();
+        document.getElementById('uName').innerText = targetUserData.username;
+        document.getElementById('uImg').src = targetUserData.photoURL || defaultAvatar;
+        document.getElementById('uBio').innerText = targetUserData.bio || "Biyografi yok.";
+        document.getElementById('uEmail').innerText = targetUserData.email || "";
+
+        await checkFollowStatus();
+        
+        updateFollowBtnUI();
+        loadStats();
+        checkPrivacyAndLoad();
+    }
+
+    async function checkFollowStatus() {
+        try {
+            // Takip İlişkisi Var mı?
             const qRel = query(
                 collection(db, "relationships"), 
                 where("followerUid", "==", myUid), 
@@ -260,435 +271,494 @@
             if(!snapRel.empty) {
                 isFollowing = true;
                 relationshipId = snapRel.docs[0].id;
+                followRequestSent = false;
+                requestId = null;
+                return;
+            } 
+            
+            isFollowing = false;
+            relationshipId = null;
+            
+            // Takip İsteği Var mı?
+            const qReq = query(collection(db, "friendRequests"), where("fromUid", "==", myUid), where("toUid", "==", targetUid));
+            const snapReq = await getDocs(qReq);
+            
+            if(!snapReq.empty) {
+                followRequestSent = true;
+                requestId = snapReq.docs[0].id;
             } else {
-                const qReq = query(collection(db, "friendRequests"), where("fromUid", "==", myUid), where("toUid", "==", targetUid));
-                const snapReq = await getDocs(qReq);
-                if(!snapReq.empty) {
-                    followRequestSent = true;
-                    requestId = snapReq.docs[0].id;
-                }
+                followRequestSent = false;
+                requestId = null;
             }
-            
-            updateFollowBtnUI();
-            loadStats();
-            checkPrivacyAndLoad();
+        } catch (error) {
+            console.error("Takip durumu kontrol edilemedi:", error);
+            // Varsayılan değerler
+            isFollowing = false;
+            relationshipId = null;
+            followRequestSent = false;
+            requestId = null;
         }
+    }
 
-        async function checkPrivacyAndLoad() {
-            if (targetUserData.isPrivate && !isFollowing) {
-                document.getElementById('userPosts').innerHTML = `
-                    <div class="private-msg">
-                        <i class="fa-solid fa-lock"></i>
-                        Bu hesap gizli.<br>Gönderileri görmek için takip et.
-                    </div>`;
-                document.getElementById('followersList').innerHTML = '<div class="empty-list-msg"><i class="fa-solid fa-lock"></i> Bu hesap gizli.</div>';
-                document.getElementById('followingList').innerHTML = '<div class="empty-list-msg"><i class="fa-solid fa-lock"></i> Bu hesap gizli.</div>';
-            } else {
-                loadUserPosts();
-            }
+    async function checkPrivacyAndLoad() {
+        if (targetUserData.isPrivate && !isFollowing) {
+            document.getElementById('userPosts').innerHTML = `
+                <div class="private-msg">
+                    <i class="fa-solid fa-lock"></i>
+                    Bu hesap gizli.<br>Gönderileri görmek için takip et.
+                </div>`;
+            document.getElementById('followersList').innerHTML = '<div class="empty-list-msg"><i class="fa-solid fa-lock"></i> Bu hesap gizli.</div>';
+            document.getElementById('followingList').innerHTML = '<div class="empty-list-msg"><i class="fa-solid fa-lock"></i> Bu hesap gizli.</div>';
+        } else {
+            loadUserPosts();
         }
+    }
 
-        async function loadStats() {
-            const qPosts = query(collection(db, "posts"), where("uid", "==", targetUid));
-            const sPosts = await getDocs(qPosts);
-            document.getElementById('sPost').innerText = sPosts.size;
+    async function loadStats() {
+        const qPosts = query(collection(db, "posts"), where("uid", "==", targetUid));
+        const sPosts = await getDocs(qPosts);
+        document.getElementById('sPost').innerText = sPosts.size;
 
-            const qFollowers = query(collection(db, "relationships"), where("followingUid", "==", targetUid), where("status", "==", "accepted"));
-            const sFollowers = await getDocs(qFollowers);
-            document.getElementById('sFollowers').innerText = sFollowers.size;
+        const qFollowers = query(collection(db, "relationships"), where("followingUid", "==", targetUid), where("status", "==", "accepted"));
+        const sFollowers = await getDocs(qFollowers);
+        document.getElementById('sFollowers').innerText = sFollowers.size;
 
-            const qFollowing = query(collection(db, "relationships"), where("followerUid", "==", targetUid), where("status", "==", "accepted"));
-            const sFollowing = await getDocs(qFollowing);
-            document.getElementById('sFollowing').innerText = sFollowing.size;
-        }
+        const qFollowing = query(collection(db, "relationships"), where("followerUid", "==", targetUid), where("status", "==", "accepted"));
+        const sFollowing = await getDocs(qFollowing);
+        document.getElementById('sFollowing').innerText = sFollowing.size;
+    }
 
-        async function loadUserPosts() {
-            const feed = document.getElementById('userPosts');
-            feed.innerHTML = '<div style="text-align:center; padding:20px;">Yükleniyor...</div>';
-            
-            try {
-                const q = query(
-                    collection(db, "posts"), 
-                    where("uid", "==", targetUid), 
-                    orderBy("timestamp", "desc")
-                );
-                
-                const snapshot = await getDocs(q);
-
-                feed.innerHTML = ''; 
-
-                if(snapshot.empty) {
-                    feed.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Henüz gönderi yok.</div>';
-                    return;
-                }
-
-                snapshot.forEach(doc => {
-                    createPostHTML(doc.id, doc.data(), feed);
-                });
-
-            } catch (error) {
-                console.error("Gönderi hatası:", error);
-                if (error.code === 'failed-precondition') {
-                    feed.innerHTML = '<div style="color:red; text-align:center;">İndeks Eksik. Console loguna bak.</div>';
-                } else {
-                    feed.innerHTML = '<div style="color:red; text-align:center;">Yüklenirken hata oluştu.</div>';
-                }
-            }
-        }
-
-        function createPostHTML(postId, post, container) {
-            let mediaHTML = "";
-            if (post.mediaUrl) { 
-                if (post.type === 'video') mediaHTML = `<video src="${post.mediaUrl}" controls class="post-image" style="background:#000; width:100%; max-height:400px;"></video>`; 
-                else mediaHTML = `<img src="${post.mediaUrl}" class="post-image">`; 
-            } else if (post.image) {
-                mediaHTML = `<img src="${post.image}" class="post-image">`; 
-            }
-            
-            let dateStr = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleDateString("tr-TR") : "";
-
-            const isLiked = post.likedBy && post.likedBy.includes(myUid);
-            const likeClass = isLiked ? 'liked' : '';
-            const heartIcon = isLiked ? 'fa-solid' : 'fa-regular';
-
-            // ŞİKAYET BUTONU EKLENDİ
-            const menuHtml = `
-                <div class="post-options">
-                    <button class="options-btn" onclick="toggleMenu('menu-${postId}')"><i class="fa-solid fa-ellipsis"></i></button>
-                    <div id="menu-${postId}" class="options-menu">
-                        <div class="option-item" onclick="openReportModal('${postId}')">Bildir</div>
-                    </div>
-                </div>
-            `;
-
-            const html = `
-                <div class="feed-post" id="${postId}">
-                    <div class="post-header">
-                        <div class="user-info-group">
-                            <img src="${targetUserData.photoURL || defaultAvatar}">
-                            <div><strong>${targetUserData.username}</strong><div style="font-size:12px;color:#888;">${dateStr}</div></div>
-                        </div>
-                        ${menuHtml}
-                    </div>
-                    <div class="post-content">${post.text}</div>
-                    ${mediaHTML}
-                    
-                    <div class="post-actions">
-                        <div id="like-btn-${postId}" class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
-                            <i class="${heartIcon} fa-heart"></i> <span>${post.likes || 0}</span>
-                        </div>
-                        <div class="action-btn" onclick="toggleCommentSection('${postId}')">
-                            <i class="fa-regular fa-comment"></i> Yorum <span id="count-${postId}"></span>
-                        </div>
-                        <div class="action-btn" onclick="openShareModal('${postId}')">
-                            <i class="fa-solid fa-share-nodes"></i> Paylaş
-                        </div>
-                    </div>
-
-                    <div id="comments-${postId}" class="comment-section" style="display:none; margin-top:10px; border-top:1px solid #333; padding-top:10px;">
-                        <div class="comment-list" id="list-${postId}" style="margin-bottom:10px;"></div>
-                        <div class="comment-input-wrapper" style="display:flex; gap:5px;">
-                            <input type="text" id="input-${postId}" placeholder="Yorum yaz..." style="flex:1; background:#222; border:1px solid #444; color:white; padding:5px 10px; border-radius:15px;">
-                            <button onclick="saveComment('${postId}')" style="background:#24caac; border:none; padding:5px 10px; border-radius:15px; cursor:pointer;">At</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-            loadComments(postId); 
-        }
-
-        // --- ETKİLEŞİM FONKSİYONLARI ---
-
-        window.toggleLike = async function(postId) {
-            const ref = doc(db, "posts", postId);
-            const snap = await getDoc(ref);
-            if (snap.exists()) {
-                const p = snap.data();
-                let likes = p.likes || 0;
-                let likedBy = p.likedBy || [];
-                
-                if(likedBy.includes(myUid)) {
-                    likes--; likedBy = likedBy.filter(id => id !== myUid);
-                } else {
-                    likes++; likedBy.push(myUid);
-                }
-                
-                await updateDoc(ref, { likes: likes, likedBy: likedBy });
-                
-                const btn = document.getElementById(`like-btn-${postId}`);
-                if(btn) {
-                    const isLiked = likedBy.includes(myUid);
-                    btn.className = `action-btn ${isLiked ? 'liked' : ''}`;
-                    btn.innerHTML = `<i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> <span>${likes}</span>`;
-                }
-            }
-        }
-
-        window.toggleCommentSection = (id) => {
-            const el = document.getElementById(`comments-${id}`);
-            el.style.display = el.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function loadComments(postId) {
-            const l = document.getElementById(`list-${postId}`);
-            const countSpan = document.getElementById(`count-${postId}`);
-            const q = query(collection(db, "comments"), where("postId", "==", postId), orderBy("timestamp", "asc"));
-            
-            getDocs(q).then(snap => {
-                if(countSpan) countSpan.innerText = snap.size > 0 ? snap.size : "";
-                l.innerHTML = '';
-                snap.forEach(doc => {
-                    const c = doc.data();
-                    l.innerHTML += `<div style="font-size:13px; margin-bottom:5px;"><strong style="color:#24caac;">${c.username}</strong>: ${c.text}</div>`;
-                });
-            });
-        }
-
-        window.saveComment = async function(postId) {
-            const input = document.getElementById(`input-${postId}`);
-            const text = input.value.trim();
-            if(!text) return;
-            
-            const meDoc = await getDoc(doc(db, "users", myUid));
-            const meData = meDoc.data();
-
-            await addDoc(collection(db, "comments"), {
-                postId: postId,
-                text: text,
-                uid: myUid,
-                username: meData.username,
-                userImg: meData.photoURL || defaultAvatar,
-                timestamp: serverTimestamp()
-            });
-            input.value = "";
-            loadComments(postId); 
-        }
-
-        // --- ŞİKAYET SİSTEMİ (YENİ EKLENDİ) ---
-        let currentReportPostId = null;
-        window.openReportModal = (id) => {
-            currentReportPostId = id;
-            document.getElementById('reportModal').style.display='flex';
-            // Menüyü kapat
-            document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('active'));
-        }
-        window.closeReportModal = () => {
-            document.getElementById('reportModal').style.display='none';
-            currentReportPostId = null;
-        }
-
-        window.submitReport = async () => {
-            const reason = document.getElementById('reportReason').value.trim();
-            if(!reason) return alert("Lütfen bir sebep yazınız.");
-            
-            const btn = document.querySelector('#reportModal .modal-buttons button:last-child');
-            btn.innerText = "Gönderiliyor...";
-            btn.disabled = true;
-
-            try {
-                // Gönderi detaylarını çek
-                const postRef = doc(db, "posts", currentReportPostId);
-                const postSnap = await getDoc(postRef);
-                
-                let postOwner = "Bilinmiyor";
-                let postContent = "İçerik Yok/Medya";
-
-                if (postSnap.exists()) {
-                    const p = postSnap.data();
-                    postOwner = p.username;
-                    postContent = p.text ? p.text.substring(0, 50) + "..." : "Sadece Görsel/Video";
-                }
-
-                // Direkt Link
-                const baseUrl = window.location.href.split('takip.html')[0] + 'pylsmgemini.html'; // Ana sayfa linkini baz al
-                const postLink = `${baseUrl}?openPost=${currentReportPostId}`;
-
-                // Firestore'a kaydet
-                await addDoc(collection(db, "reports"), {
-                    postId: currentReportPostId,
-                    reason: reason,
-                    reportedBy: myUid,
-                    reporterName: myUsername || "Bilinmeyen Kullanıcı",
-                    timestamp: serverTimestamp()
-                });
-
-                // EmailJS Gönderimi
-                const templateParams = {
-                    reporter_name: myUsername || "Bilinmeyen",
-                    reason: reason,
-                    post_id: currentReportPostId,
-                    post_owner: postOwner,
-                    post_content: postContent,
-                    post_link: postLink
-                };
-
-                // BURADAKİ ID'LER pylsmgemini.html İLE AYNIDIR
-                await emailjs.send('service_0z7sl3w', 'template_afv7n7t', templateParams);
-
-                alert("Bildiriminiz yöneticiye iletildi.");
-                closeReportModal();
-
-            } catch (error) {
-                console.error("Rapor hatası:", error);
-                alert("Rapor kaydedildi ancak mail sunucusunda hata oluştu.");
-                closeReportModal();
-            } finally {
-                btn.innerText = "Gönder";
-                btn.disabled = false;
-            }
-        }
-
-        // --- PAYLAŞIM (DÜZELTİLMİŞ) ---
-        let currentPostIdToShare = null;
-        window.openShareModal = (postId) => {
-            currentPostIdToShare = postId;
-            document.getElementById('shareModal').style.display = 'flex';
-            loadShareList();
-        }
-        window.closeShareModal = () => document.getElementById('shareModal').style.display = 'none';
-
-        async function loadShareList() {
-            const list = document.getElementById('shareModalList');
-            list.innerHTML = '<div style="text-align:center; color:#888;">Yükleniyor...</div>';
-            
-            const q = query(collection(db, "relationships"), where("followerUid", "==", myUid), where("status", "==", "accepted"));
-            const snap = await getDocs(q);
-            
-            list.innerHTML = '';
-            if(snap.empty) { list.innerHTML = '<div style="color:#888;">Kimseyi takip etmiyorsun.</div>'; return; }
-
-            snap.forEach(async (d) => {
-                const rel = d.data();
-                const uDoc = await getDoc(doc(db, "users", rel.followingUid));
-                if(uDoc.exists()) {
-                    const u = uDoc.data();
-                    const uImg = u.photoURL || defaultAvatar;
-                    list.innerHTML += `
-                        <div class="share-contact" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#222; margin-bottom:5px; border-radius:8px;">
-                            <div class="share-info" style="display:flex; align-items:center; gap:10px;">
-                                <img src="${uImg}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
-                                <span>${u.username}</span>
-                            </div>
-                            <button class="user-list-btn" onclick="shareWithContact('${u.username}', '${u.uid}')" style="background:#24caac; border:none; padding:5px 15px; border-radius:15px; font-weight:bold; cursor:pointer;">
-                                Gönder
-                            </button>
-                        </div>`;
-                }
-            });
-        }
-
-        window.shareWithContact = async function(contactName, targetUid) {
-            if (!currentPostIdToShare) { alert("Hata: Gönderi seçilemedi."); return; }
-
-            try {
-                const pDoc = await getDoc(doc(db, "posts", currentPostIdToShare));
-                if (!pDoc.exists()) { alert("Hata: Gönderi bulunamadı."); return; }
-                const pData = pDoc.data();
-
-                const roomId = [myUid, targetUid].sort().join("_");
-
-                await addDoc(collection(db, "chats", roomId, "messages"), {
-                    senderId: myUid,
-                    recipientId: targetUid,
-                    timestamp: serverTimestamp(),
-                    isRead: false,
-                    isSharedPost: true,
-                    likes: 0,
-                    likedBy: [],
-                    postData: {
-                        id: currentPostIdToShare,
-                        text: pData.text || "",
-                        media: pData.mediaUrl || pData.image || null,
-                        type: pData.type || 'text',
-                        owner: pData.username
-                    }
-                });
-
-                alert(`${contactName} kişisine gönderildi!`);
-                closeShareModal();
-
-            } catch (error) {
-                console.error("Paylaşım hatası:", error);
-                alert("Gönderilirken bir hata oluştu.");
-            }
-        }
-
-        window.switchTab = function(tabName) {
-            if (targetUserData.isPrivate && !isFollowing && (tabName === 'followers' || tabName === 'following')) {
-                return alert("Bu hesap gizli. Listeleri görmek için takip etmelisin.");
-            }
-            document.querySelectorAll('.stat-item').forEach(i => i.classList.remove('active'));
-            document.getElementById('tab-' + tabName).classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById('content-' + tabName).classList.add('active');
-            if (tabName === 'followers') loadLists('followers');
-            if (tabName === 'following') loadLists('following');
-        }
-
-        async function loadLists(type) {
-            const container = document.getElementById(type + 'List');
-            container.innerHTML = '<div class="empty-list-msg">Yükleniyor...</div>';
-            let q;
-            if (type === 'followers') q = query(collection(db, "relationships"), where("followingUid", "==", targetUid), where("status", "==", "accepted"));
-            else q = query(collection(db, "relationships"), where("followerUid", "==", targetUid), where("status", "==", "accepted"));
+    async function loadUserPosts() {
+        const feed = document.getElementById('userPosts');
+        feed.innerHTML = '<div style="text-align:center; padding:20px;">Yükleniyor...</div>';
+        
+        try {
+            const q = query(
+                collection(db, "posts"), 
+                where("uid", "==", targetUid), 
+                orderBy("timestamp", "desc")
+            );
             
             const snapshot = await getDocs(q);
-            container.innerHTML = '';
-            if (snapshot.empty) { container.innerHTML = '<div class="empty-list-msg">Liste boş.</div>'; return; }
 
-            snapshot.forEach(async (docSnap) => {
-                const rel = docSnap.data();
-                const uidToFetch = type === 'followers' ? rel.followerUid : rel.followingUid;
-                const uDoc = await getDoc(doc(db, "users", uidToFetch));
-                if(uDoc.exists()) {
-                    const uData = uDoc.data();
-                    const uImg = uData.photoURL || defaultAvatar;
-                    container.insertAdjacentHTML('beforeend', `
-                        <div class="user-list-item" onclick="window.location.href='takip.html?kisi=${uidToFetch}'">
-                            <div class="user-list-info"><img src="${uImg}"><div style="font-weight:600;">${uData.username}</div></div>
-                        </div>
-                    `);
-                }
+            feed.innerHTML = ''; 
+
+            if(snapshot.empty) {
+                feed.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Henüz gönderi yok.</div>';
+                return;
+            }
+
+            snapshot.forEach(doc => {
+                createPostHTML(doc.id, doc.data(), feed);
             });
-        }
 
-        window.toggleFollow = async function() {
-            const btn = document.getElementById('followBtn'); btn.disabled = true;
-            try {
-                if (isFollowing) {
-                    if(confirm("Takipten çıkılsın mı?")) { await deleteDoc(doc(db, "relationships", relationshipId)); isFollowing = false; relationshipId = null; location.reload(); }
-                } else if (followRequestSent) {
-                    await deleteDoc(doc(db, "friendRequests", requestId)); followRequestSent = false; requestId = null;
-                } else {
-                    if (targetUserData.isPrivate) {
-                        const ref = await addDoc(collection(db, "friendRequests"), { fromUid: myUid, toUid: targetUid, timestamp: serverTimestamp() });
-                        followRequestSent = true; requestId = ref.id;
-                    } else {
-                        const ref = await addDoc(collection(db, "relationships"), { followerUid: myUid, followingUid: targetUid, status: 'accepted', timestamp: serverTimestamp() });
-                        isFollowing = true; relationshipId = ref.id; location.reload();
-                    }
-                }
-                updateFollowBtnUI();
-            } catch(e) { console.error(e); } finally { btn.disabled = false; }
-        }
-
-        function updateFollowBtnUI() {
-            const btn = document.getElementById('followBtn');
-            if (isFollowing) { btn.innerText = "Takip Ediliyor"; btn.style.background = "#333"; btn.style.color = "#24caac"; btn.style.border = "1px solid #24caac"; }
-            else if (followRequestSent) { btn.innerText = "İstek Gönderildi"; btn.style.background = "#555"; btn.style.color = "#fff"; btn.style.border = "none"; }
-            else { btn.innerText = "Takip Et"; btn.style.background = "#24caac"; btn.style.color = "#000"; btn.style.border = "none"; }
-        }
-
-        window.toggleMenu = (id) => document.getElementById(id).classList.toggle('active');
-        window.goToChat = function() { window.location.href = `pylsmgemini.html?chatUser=${targetUid}`; }
-        window.onclick = (e) => { 
-            if(e.target.id === 'shareModal') closeShareModal();
-            if(e.target.id === 'reportModal') closeReportModal();
-            if(!e.target.closest('.options-btn') && !e.target.closest('.options-menu')) {
-                document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('active'));
+        } catch (error) {
+            console.error("Gönderi hatası:", error);
+            if (error.code === 'failed-precondition') {
+                feed.innerHTML = '<div style="color:red; text-align:center;">İndeks Eksik. Console loguna bak.</div>';
+            } else {
+                feed.innerHTML = '<div style="color:red; text-align:center;">Yüklenirken hata oluştu.</div>';
             }
         }
-    </script>
+    }
+
+    function createPostHTML(postId, post, container) {
+        let mediaHTML = "";
+        if (post.mediaUrl) { 
+            if (post.type === 'video') mediaHTML = `<video src="${post.mediaUrl}" controls class="post-image" style="background:#000; width:100%; max-height:400px;"></video>`; 
+            else mediaHTML = `<img src="${post.mediaUrl}" class="post-image">`; 
+        } else if (post.image) {
+            mediaHTML = `<img src="${post.image}" class="post-image">`; 
+        }
+        
+        let dateStr = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleDateString("tr-TR") : "";
+
+        const isLiked = post.likedBy && post.likedBy.includes(myUid);
+        const likeClass = isLiked ? 'liked' : '';
+        const heartIcon = isLiked ? 'fa-solid' : 'fa-regular';
+
+        const menuHtml = `
+            <div class="post-options">
+                <button class="options-btn" onclick="toggleMenu('menu-${postId}')"><i class="fa-solid fa-ellipsis"></i></button>
+                <div id="menu-${postId}" class="options-menu">
+                    <div class="option-item" onclick="openReportModal('${postId}')">Bildir</div>
+                </div>
+            </div>
+        `;
+
+        const html = `
+            <div class="feed-post" id="${postId}">
+                <div class="post-header">
+                    <div class="user-info-group">
+                        <img src="${targetUserData.photoURL || defaultAvatar}">
+                        <div><strong>${targetUserData.username}</strong><div style="font-size:12px;color:#888;">${dateStr}</div></div>
+                    </div>
+                    ${menuHtml}
+                </div>
+                <div class="post-content">${post.text}</div>
+                ${mediaHTML}
+                
+                <div class="post-actions">
+                    <div id="like-btn-${postId}" class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
+                        <i class="${heartIcon} fa-heart"></i> <span>${post.likes || 0}</span>
+                    </div>
+                    <div class="action-btn" onclick="toggleCommentSection('${postId}')">
+                        <i class="fa-regular fa-comment"></i> Yorum <span id="count-${postId}"></span>
+                    </div>
+                    <div class="action-btn" onclick="openShareModal('${postId}')">
+                        <i class="fa-solid fa-share-nodes"></i> Paylaş
+                    </div>
+                </div>
+
+                <div id="comments-${postId}" class="comment-section" style="display:none; margin-top:10px; border-top:1px solid #333; padding-top:10px;">
+                    <div class="comment-list" id="list-${postId}" style="margin-bottom:10px;"></div>
+                    <div class="comment-input-wrapper" style="display:flex; gap:5px;">
+                        <input type="text" id="input-${postId}" placeholder="Yorum yaz..." style="flex:1; background:#222; border:1px solid #444; color:white; padding:5px 10px; border-radius:15px;">
+                        <button onclick="saveComment('${postId}')" style="background:#24caac; border:none; padding:5px 10px; border-radius:15px; cursor:pointer;">At</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+        loadComments(postId); 
+    }
+
+    window.toggleLike = async function(postId) {
+        const ref = doc(db, "posts", postId);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            const p = snap.data();
+            let likes = p.likes || 0;
+            let likedBy = p.likedBy || [];
+            
+            if(likedBy.includes(myUid)) {
+                likes--; likedBy = likedBy.filter(id => id !== myUid);
+            } else {
+                likes++; likedBy.push(myUid);
+            }
+            
+            await updateDoc(ref, { likes: likes, likedBy: likedBy });
+            
+            const btn = document.getElementById(`like-btn-${postId}`);
+            if(btn) {
+                const isLiked = likedBy.includes(myUid);
+                btn.className = `action-btn ${isLiked ? 'liked' : ''}`;
+                btn.innerHTML = `<i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> <span>${likes}</span>`;
+            }
+        }
+    }
+
+    window.toggleCommentSection = (id) => {
+        const el = document.getElementById(`comments-${id}`);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function loadComments(postId) {
+        const l = document.getElementById(`list-${postId}`);
+        const countSpan = document.getElementById(`count-${postId}`);
+        const q = query(collection(db, "comments"), where("postId", "==", postId), orderBy("timestamp", "asc"));
+        
+        getDocs(q).then(snap => {
+            if(countSpan) countSpan.innerText = snap.size > 0 ? snap.size : "";
+            l.innerHTML = '';
+            snap.forEach(doc => {
+                const c = doc.data();
+                l.innerHTML += `<div style="font-size:13px; margin-bottom:5px;"><strong style="color:#24caac;">${c.username}</strong>: ${c.text}</div>`;
+            });
+        });
+    }
+
+    window.saveComment = async function(postId) {
+        const input = document.getElementById(`input-${postId}`);
+        const text = input.value.trim();
+        if(!text) return;
+        
+        const meDoc = await getDoc(doc(db, "users", myUid));
+        const meData = meDoc.data();
+
+        await addDoc(collection(db, "comments"), {
+            postId: postId,
+            text: text,
+            uid: myUid,
+            username: meData.username,
+            userImg: meData.photoURL || defaultAvatar,
+            timestamp: serverTimestamp()
+        });
+        input.value = "";
+        loadComments(postId); 
+    }
+
+    // --- ŞİKAYET SİSTEMİ ---
+    let currentReportPostId = null;
+    window.openReportModal = (id) => {
+        currentReportPostId = id;
+        document.getElementById('reportModal').style.display='flex';
+        document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('active'));
+    }
+    window.closeReportModal = () => {
+        document.getElementById('reportModal').style.display='none';
+        currentReportPostId = null;
+    }
+
+    window.submitReport = async () => {
+        const reason = document.getElementById('reportReason').value.trim();
+        if(!reason) return alert("Lütfen bir sebep yazınız.");
+        
+        const btn = document.querySelector('#reportModal .modal-buttons button:last-child');
+        btn.innerText = "Gönderiliyor...";
+        btn.disabled = true;
+
+        try {
+            const postRef = doc(db, "posts", currentReportPostId);
+            const postSnap = await getDoc(postRef);
+            
+            let postOwner = "Bilinmiyor";
+            let postContent = "İçerik Yok/Medya";
+
+            if (postSnap.exists()) {
+                const p = postSnap.data();
+                postOwner = p.username;
+                postContent = p.text ? p.text.substring(0, 50) + "..." : "Sadece Görsel/Video";
+            }
+
+            const baseUrl = window.location.href.split('takip.html')[0] + 'pylsmgemini.html';
+            const postLink = `${baseUrl}?openPost=${currentReportPostId}`;
+
+            await addDoc(collection(db, "reports"), {
+                postId: currentReportPostId,
+                reason: reason,
+                reportedBy: myUid,
+                reporterName: myUsername || "Bilinmeyen Kullanıcı",
+                timestamp: serverTimestamp()
+            });
+
+            const templateParams = {
+                reporter_name: myUsername || "Bilinmeyen",
+                reason: reason,
+                post_id: currentReportPostId,
+                post_owner: postOwner,
+                post_content: postContent,
+                post_link: postLink
+            };
+
+            await emailjs.send('service_0z7sl3w', 'template_afv7n7t', templateParams);
+
+            alert("Bildiriminiz yöneticiye iletildi.");
+            closeReportModal();
+
+        } catch (error) {
+            console.error("Rapor hatası:", error);
+            alert("Rapor kaydedildi ancak mail sunucusunda hata oluştu.");
+            closeReportModal();
+        } finally {
+            btn.innerText = "Gönder";
+            btn.disabled = false;
+        }
+    }
+
+    // --- PAYLAŞIM ---
+    let currentPostIdToShare = null;
+    window.openShareModal = (postId) => {
+        currentPostIdToShare = postId;
+        document.getElementById('shareModal').style.display = 'flex';
+        loadShareList();
+    }
+    window.closeShareModal = () => document.getElementById('shareModal').style.display = 'none';
+
+    async function loadShareList() {
+        const list = document.getElementById('shareModalList');
+        list.innerHTML = '<div style="text-align:center; color:#888;">Yükleniyor...</div>';
+        
+        const q = query(collection(db, "relationships"), where("followerUid", "==", myUid), where("status", "==", "accepted"));
+        const snap = await getDocs(q);
+        
+        list.innerHTML = '';
+        if(snap.empty) { list.innerHTML = '<div style="color:#888;">Kimseyi takip etmiyorsun.</div>'; return; }
+
+        snap.forEach(async (d) => {
+            const rel = d.data();
+            const uDoc = await getDoc(doc(db, "users", rel.followingUid));
+            if(uDoc.exists()) {
+                const u = uDoc.data();
+                const uImg = u.photoURL || defaultAvatar;
+                
+                const div = document.createElement('div');
+                div.className = 'share-contact';
+                div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px; background:#222; margin-bottom:5px; border-radius:8px;';
+                div.innerHTML = `
+                    <div class="share-info" style="display:flex; align-items:center; gap:10px;">
+                        <img src="${uImg}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                        <span>${u.username}</span>
+                    </div>
+                    <button class="user-list-btn" onclick="shareWithContact('${u.username}', '${u.uid}')" style="background:#24caac; border:none; padding:5px 15px; border-radius:15px; font-weight:bold; cursor:pointer;">
+                        Gönder
+                    </button>`;
+                
+                list.appendChild(div);
+            }
+        });
+    }
+
+    window.shareWithContact = async function(contactName, targetUid) {
+        if (!currentPostIdToShare) { alert("Hata: Gönderi seçilemedi."); return; }
+
+        try {
+            const pDoc = await getDoc(doc(db, "posts", currentPostIdToShare));
+            if (!pDoc.exists()) { alert("Hata: Gönderi bulunamadı."); return; }
+            const pData = pDoc.data();
+
+            const roomId = [myUid, targetUid].sort().join("_");
+
+            await addDoc(collection(db, "chats", roomId, "messages"), {
+                senderId: myUid,
+                recipientId: targetUid,
+                timestamp: serverTimestamp(),
+                isRead: false,
+                isSharedPost: true,
+                likes: 0,
+                likedBy: [],
+                postData: {
+                    id: currentPostIdToShare,
+                    text: pData.text || "",
+                    media: pData.mediaUrl || pData.image || null,
+                    type: pData.type || 'text',
+                    owner: pData.username
+                }
+            });
+
+            alert(`${contactName} kişisine gönderildi!`);
+            closeShareModal();
+
+        } catch (error) {
+            console.error("Paylaşım hatası:", error);
+            alert("Gönderilirken bir hata oluştu.");
+        }
+    }
+
+    // --- TAB KONTROLLERİ ---
+    window.switchTab = function(tabName) {
+        if (targetUserData.isPrivate && !isFollowing && (tabName === 'followers' || tabName === 'following')) {
+            return alert("Bu hesap gizli. Listeleri görmek için takip etmelisin.");
+        }
+        document.querySelectorAll('.stat-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('content-' + tabName).classList.add('active');
+        
+        if (tabName === 'followers' || tabName === 'following') {
+             loadLists(tabName);
+        }
+    }
+
+    async function loadLists(type) {
+        const container = document.getElementById(type + 'List');
+        container.innerHTML = '<div class="empty-list-msg">Yükleniyor...</div>';
+        let q;
+        if (type === 'followers') q = query(collection(db, "relationships"), where("followingUid", "==", targetUid), where("status", "==", "accepted"));
+        else q = query(collection(db, "relationships"), where("followerUid", "==", targetUid), where("status", "==", "accepted"));
+        
+        const snapshot = await getDocs(q);
+        container.innerHTML = '';
+        if (snapshot.empty) { container.innerHTML = '<div class="empty-list-msg">Liste boş.</div>'; return; }
+
+        // İlişki listesi yüklenirken eş zamanlı olarak kullanıcı bilgilerini çekiyoruz
+        const userPromises = snapshot.docs.map(docSnap => {
+            const rel = docSnap.data();
+            const uidToFetch = type === 'followers' ? rel.followerUid : rel.followingUid;
+            return getDoc(doc(db, "users", uidToFetch));
+        });
+
+        const userDocs = await Promise.all(userPromises);
+
+        userDocs.forEach(uDoc => {
+            if(uDoc.exists()) {
+                const uData = uDoc.data();
+                const uImg = uData.photoURL || defaultAvatar;
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="user-list-item" onclick="window.location.href='takip.html?kisi=${uData.uid}'">
+                        <div class="user-list-info"><img src="${uImg}"><div style="font-weight:600;">${uData.username}</div></div>
+                    </div>
+                `);
+            }
+        });
+    }
+
+    window.toggleMenu = (id) => document.getElementById(id).classList.toggle('active');
+    window.goToChat = function() { window.location.href = `pylsmgemini.html?chatUser=${targetUid}`; }
+    window.onclick = (e) => { 
+        if(e.target.id === 'shareModal') closeShareModal();
+        if(e.target.id === 'reportModal') closeReportModal();
+        if(!e.target.closest('.options-btn') && !e.target.closest('.options-menu')) {
+            document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('active'));
+        }
+    }
+
+    async function toggleFollow() {
+        try {
+            if (isFollowing) {
+                // Takibi bırak
+                await deleteDoc(doc(db, "relationships", relationshipId));
+                isFollowing = false;
+                relationshipId = null;
+            } else if (followRequestSent) {
+                // İsteği iptal et
+                await deleteDoc(doc(db, "friendRequests", requestId));
+                followRequestSent = false;
+                requestId = null;
+            } else {
+                // Takip isteği gönder veya doğrudan takip et
+                if (targetUserData.isPrivate) {
+                    const req = await addDoc(collection(db, "friendRequests"), {
+                        fromUid: myUid,
+                        toUid: targetUid,
+                        timestamp: serverTimestamp()
+                    });
+                    requestId = req.id;
+                    followRequestSent = true;
+                } else {
+                    const rel = await addDoc(collection(db, "relationships"), {
+                        followerUid: myUid,
+                        followingUid: targetUid,
+                        status: "accepted",
+                        timestamp: serverTimestamp()
+                    });
+                    relationshipId = rel.id;
+                    isFollowing = true;
+                }
+            }
+            updateFollowBtnUI();
+            loadStats();
+            checkPrivacyAndLoad(); // Gizlilik kontrolünü yeniden yap
+        } catch (error) {
+            console.error("Takip işlemi hatası:", error);
+            alert("Takip işlemi sırasında hata oluştu.");
+        }
+    }
+
+    function updateFollowBtnUI() {
+        const btn = document.getElementById('followBtn');
+        const msgBtn = document.getElementById('msgBtn');
+        if (isFollowing) {
+            btn.innerText = 'Takip Ediliyor';
+            btn.style.background = '#555';
+            msgBtn.style.display = 'block';
+        } else if (followRequestSent) {
+            btn.innerText = 'İstek Gönderildi';
+            btn.style.background = '#888';
+            btn.style.color = '#000';
+            msgBtn.style.display = 'none';
+        } else {
+            btn.innerText = 'Takip Et';
+            btn.style.background = '#24caac';
+            msgBtn.style.display = 'none';
+        }
+    }
+
+    // Event listeners ekle
+    document.getElementById('followBtn').addEventListener('click', toggleFollow);
+    document.getElementById('msgBtn').addEventListener('click', goToChat);
+</script>
+</body>
+</html>
 </body>
 </html>
