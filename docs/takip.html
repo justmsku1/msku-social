@@ -23,6 +23,8 @@
         /* HEADER */
         header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: #1a1a1a; border-bottom: 1px solid #333; height: 70px; }
         header h1 { color: #24caac; font-size: 24px; cursor: pointer; }
+        .theme-toggle { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        .theme-toggle:hover { background: #24caac; color: black; }
         .back-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; transition: 0.3s; }
         .back-btn:hover { background: #24caac; color: black; }
 
@@ -106,13 +108,48 @@
             .stat-label { font-size: 11px; }
             header { padding: 10px 15px; }
         }
+
+        /* BEYAZ TEMA */
+        body.light-theme { background-color: #fff; color: #000; }
+        body.light-theme header { background: #f0f0f0; border-bottom: 1px solid #ccc; }
+        body.light-theme header h1 { color: #24caac; }
+        body.light-theme .theme-toggle { background: #ddd; color: #000; }
+        body.light-theme .theme-toggle:hover { background: #24caac; color: #fff; }
+        body.light-theme .back-btn { background: #ddd; color: #000; }
+        body.light-theme .back-btn:hover { background: #24caac; color: #fff; }
+        body.light-theme .profile-card { background: #f9f9f9; border: 1px solid #ddd; }
+        body.light-theme .user-name { color: #000; }
+        body.light-theme .user-email { color: #666; background: #eee; }
+        body.light-theme .bio-text { color: #333; }
+        body.light-theme .btn-msg { background: #ddd; color: #000; border: 1px solid #bbb; }
+        body.light-theme .stats-bar { border-top: 1px solid #ddd; }
+        body.light-theme .stat-item:hover { background: #eee; }
+        body.light-theme .stat-item.active { background: rgba(36, 202, 172, 0.1); }
+        body.light-theme .feed-post { background: #f9f9f9; border: 1px solid #ddd; }
+        body.light-theme .post-content { color: #000; }
+        body.light-theme .post-actions { border-top: 1px solid #ddd; color: #666; }
+        body.light-theme .action-btn:hover { color: #24caac; }
+        body.light-theme .options-menu { background: #fff; border: 1px solid #ccc; }
+        body.light-theme .option-item:hover { background: #eee; color: #000; }
+        body.light-theme .private-msg { background: #f0f0f0; border: 1px solid #ddd; color: #666; }
+        body.light-theme .user-list-item { background: #f9f9f9; border: 1px solid #ddd; }
+        body.light-theme .empty-list-msg { color: #666; }
+        body.light-theme .modal-content { background: #f9f9f9; border: 1px solid #ddd; }
+        body.light-theme .share-contact { background: #eee; }
+        body.light-theme .user-list-btn { background: #ddd; border: 1px solid #bbb; color: #000; }
+        body.light-theme textarea { background: #fff; color: #000; border: 1px solid #ccc; }
+        body.light-theme input { background: #fff; color: #000; border: 1px solid #ccc; }
+        body.light-theme .comment-input-wrapper input { background: #fff; border: 1px solid #ccc; color: #000; }
     </style>
 </head>
 <body>
 
     <header>
         <h1 onclick="window.location.href='pylsmgemini.html'">Just MSKU</h1>
-        <a href="pylsmgemini.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Geri Dön</a>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn"><i class="fa-solid fa-sun"></i></button>
+            <a href="pylsmgemini.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Geri Dön</a>
+        </div>
     </header>
 
     <div class="container">
@@ -213,6 +250,14 @@
     let followRequestSent = false;
     let requestId = null;
     const defaultAvatar = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+
+    // Tema yükle
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('themeBtn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+    } else {
+        document.getElementById('themeBtn').innerHTML = '<i class="fa-solid fa-sun"></i>';
+    }
 
     const params = new URLSearchParams(window.location.search);
     targetUid = params.get('kisi');
@@ -684,6 +729,12 @@
     }
 
     window.toggleMenu = (id) => document.getElementById(id).classList.toggle('active');
+    window.toggleTheme = () => {
+        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.contains('light-theme');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        document.getElementById('themeBtn').innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+    }
     window.goToChat = function() { window.location.href = `pylsmgemini.html?chatUser=${targetUid}`; }
     window.onclick = (e) => { 
         if(e.target.id === 'shareModal') closeShareModal();
