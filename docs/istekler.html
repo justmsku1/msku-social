@@ -1,201 +1,208 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İstekler - Just MSKU</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* --- STİLLER (AYNI) --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-        body { background-color: #000; color: #fff; display: flex; flex-direction: column; min-height: 100vh; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #1a1a1a; border-bottom: 1px solid #333; height: 70px; position: sticky; top: 0; z-index: 100;}
-        header h1 { color: #24caac; font-size: 20px; cursor: pointer; }
-        
-        .back-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; text-decoration: none; font-size: 12px; }
-        
-        .container { max-width: 600px; margin: 20px auto; width: 100%; padding: 0 15px; }
-        
-        .request-card { background: #1a1a1a; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; margin-bottom: 15px; transition: 0.3s; }
-        
-        .user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .user-info img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #24caac; }
-        
-        .btn-group { display: flex; gap: 5px; }
-        .btn { padding: 8px 15px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; font-size: 12px; }
-        .btn-accept { background: #24caac; color: #000; }
-        .btn-reject { background: #333; color: #ccc; }
-        .btn:hover { opacity: 0.8; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstekler - Just MSKU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- STİLLER (AYNI) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body { background-color: #000; color: #fff; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #1a1a1a; border-bottom: 1px solid #333; height: 70px; position: sticky; top: 0; z-index: 100;}
+        header h1 { color: #24caac; font-size: 20px; cursor: pointer; }
+        
+        .back-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; text-decoration: none; font-size: 12px; }
+        
+        .container { max-width: 600px; margin: 20px auto; width: 100%; padding: 0 15px; }
+        
+        .request-card { background: #1a1a1a; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; margin-bottom: 15px; transition: 0.3s; }
+        
+        .user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .user-info img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #24caac; }
+        
+        .btn-group { display: flex; gap: 5px; }
+        .btn { padding: 8px 15px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; font-size: 12px; }
+        .btn-accept { background: #24caac; color: #000; }
+        .btn-reject { background: #333; color: #ccc; }
+        .btn:hover { opacity: 0.8; }
 
-        h2 { font-size: 18px; }
-        .empty-state { text-align: center; color: #555; margin-top: 50px; display: none; }
-    </style>
+        h2 { font-size: 18px; }
+        .empty-state { text-align: center; color: #555; margin-top: 50px; display: none; }
+    </style>
 </head>
 <body>
-    <header>
-        <h1 onclick="window.location.href='pylsmgemini.html'">Just MSKU</h1>
-        <a href="pylsmgemini.html" class="back-btn">Geri Dön</a>
-    </header>
+    <header>
+        <h1 onclick="window.location.href='pylsmgemini.html'">Just MSKU</h1>
+        <a href="pylsmgemini.html" class="back-btn">Geri Dön</a>
+    </header>
 
-    <div class="container">
-        <h2 style="color: #24caac; margin-bottom: 20px;">Takip İstekleri <span id="reqCount" style="font-size:14px; color:#888;">(0)</span></h2>
-        
-        <div id="requestsContainer">
-            <p style="color: #666; font-size: 14px; text-align:center; margin-top:20px;">Yükleniyor...</p>
-        </div>
-        
-        <div id="emptyState" class="empty-state">
-            <p>Bekleyen yeni bir istek yok.</p>
-        </div>
-    </div>
+    <div class="container">
+        <h2 style="color: #24caac; margin-bottom: 20px;">Takip İstekleri <span id="reqCount" style="font-size:14px; color:#888;">(0)</span></h2>
+        
+        <div id="requestsContainer">
+            <p style="color: #666; font-size: 14px; text-align:center; margin-top:20px;">Yükleniyor...</p>
+        </div>
+        
+        <div id="emptyState" class="empty-state">
+            <p>Bekleyen yeni bir istek yok.</p>
+        </div>
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // Firestore modülünden gerekli fonskiyonlar içe aktarılıyor, increment da dahil
+        import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc, getDoc, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
-            authDomain: "justmsku.firebaseapp.com",
-            projectId: "justmsku",
-            storageBucket: "justmsku.firebasestorage.app",
-            messagingSenderId: "424626283802",
-            appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
-        };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
+            authDomain: "justmsku.firebaseapp.com",
+            projectId: "justmsku",
+            storageBucket: "justmsku.firebasestorage.app",
+            messagingSenderId: "424626283802",
+            appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
+        };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const defaultAvatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const defaultAvatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
 
-        let currentUserUid = null;
+        let currentUserUid = null;
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUserUid = user.uid;
-                loadRequests(user.uid);
-            } else {
-                window.location.href = "login.html";
-            }
-        });
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loadRequests(user.uid);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
 
-        // --- İSTEKLERİ ÇEKME FONKSİYONU (DÜZELTİLDİ) ---
-        async function loadRequests(myUid) {
-            const container = document.getElementById('requestsContainer');
-            const emptyState = document.getElementById('emptyState');
-            
-            // DÜZELTME: Artık 'friendRequests' koleksiyonuna bakıyoruz.
-            // 'toUid' alanı BENİM ID'm olmalı.
-            const q = query(
-                collection(db, "friendRequests"), 
-                where("toUid", "==", myUid)
-            );
-            
-            try {
-                const querySnapshot = await getDocs(q);
+        // --- İSTEKLERİ ÇEKME FONKSİYONU ---
+        async function loadRequests(myUid) {
+            const container = document.getElementById('requestsContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            const q = query(
+                collection(db, "friendRequests"), 
+                where("toUid", "==", myUid)
+            );
+            
+            try {
+                const querySnapshot = await getDocs(q);
 
-                container.innerHTML = ""; 
+                container.innerHTML = ""; 
 
-                if (querySnapshot.empty) {
-                    emptyState.style.display = 'block';
-                    document.getElementById('reqCount').innerText = "(0)";
-                } else {
-                    emptyState.style.display = 'none';
-                    document.getElementById('reqCount').innerText = `(${querySnapshot.size})`;
-                    
-                    const promises = querySnapshot.docs.map(async (docSnap) => {
-                        const reqData = docSnap.data();
-                        const reqId = docSnap.id;
-                        const requesterUid = reqData.fromUid; // İstek gönderen kişi
+                if (querySnapshot.empty) {
+                    emptyState.style.display = 'block';
+                    document.getElementById('reqCount').innerText = "(0)";
+                } else {
+                    emptyState.style.display = 'none';
+                    document.getElementById('reqCount').innerText = `(${querySnapshot.size})`;
+                    
+                    const promises = querySnapshot.docs.map(async (docSnap) => {
+                        const reqData = docSnap.data();
+                        const reqId = docSnap.id;
+                        const requesterUid = reqData.fromUid; // İstek gönderen kişi
 
-                        // Kullanıcı bilgisini çek
-                        const userDoc = await getDoc(doc(db, "users", requesterUid));
-                        
-                        let userName = "Bilinmeyen Kullanıcı";
-                        let userImg = defaultAvatar;
-                        let userBio = "MSKU Öğrencisi";
+                        // Kullanıcı bilgisini çek
+                        const userDoc = await getDoc(doc(db, "users", requesterUid));
+                        
+                        let userName = "Bilinmeyen Kullanıcı";
+                        let userImg = defaultAvatar;
+                        let userBio = "MSKU Öğrencisi";
 
-                        if (userDoc.exists()) {
-                            const userData = userDoc.data();
-                            userName = userData.username || userName;
-                            userImg = userData.photoURL || userImg;
-                            userBio = userData.bio || userBio;
-                        }
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            userName = userData.username || userName;
+                            userImg = userData.photoURL || userImg;
+                            userBio = userData.bio || userBio;
+                        }
 
-                        // Kartı oluştur (Onayla fonksiyonuna parametre olarak requesterUid de gönderiyoruz)
-                        return `
-                            <div class="request-card" id="card-${reqId}">
-                                <div class="user-info" onclick="window.location.href='takip.html?kisi=${requesterUid}'">
-                                    <img src="${userImg}" alt="User">
-                                    <div>
-                                        <h4 style="margin:0; font-size: 14px;">${userName}</h4>
-                                        <span style="font-size:11px; color:#888;">${userBio.substring(0, 30)}...</span>
-                                    </div>
-                                </div>
-                                <div class="btn-group">
-                                    <button class="btn btn-accept" onclick="processRequest('${reqId}', '${requesterUid}', true)">Onayla</button>
-                                    <button class="btn btn-reject" onclick="processRequest('${reqId}', '${requesterUid}', false)">Sil</button>
-                                </div>
-                            </div>
-                        `;
+                        // Kartı oluştur (Onayla fonksiyonuna parametre olarak requesterUid de gönderiyoruz)
+                        return `
+                            <div class="request-card" id="card-${reqId}">
+                                <div class="user-info" onclick="window.location.href='takip.html?kisi=${requesterUid}'">
+                                    <img src="${userImg}" alt="User">
+                                    <div>
+                                        <h4 style="margin:0; font-size: 14px;">${userName}</h4>
+                                        <span style="font-size:11px; color:#888;">${userBio.substring(0, 30)}...</span>
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-accept" onclick="processRequest('${reqId}', '${requesterUid}', true)">Onayla</button>
+                                    <button class="btn btn-reject" onclick="processRequest('${reqId}', '${requesterUid}', false)">Sil</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    const htmlArray = await Promise.all(promises);
+                    container.innerHTML = htmlArray.join('');
+                }
+            } catch (error) {
+                console.error("İstekler çekilirken hata:", error);
+                container.innerHTML = "<p style='color:red; text-align:center;'>Bir hata oluştu.</p>";
+            }
+        }
+
+        // --- KABUL ET / REDDET FONKSİYONU (GÜNCELLENDİ) ---
+        window.processRequest = async function(reqId, requesterUid, isAccepted) {
+            const card = document.getElementById(`card-${reqId}`);
+            if(card) card.style.opacity = "0.5"; 
+
+            try {
+                if (isAccepted) {
+                    // KABUL EDİLİNCE:
+                    // 1. 'relationships' koleksiyonuna YENİ kayıt ekle (status: accepted)
+                    await addDoc(collection(db, "relationships"), {
+                        followerUid: requesterUid, // O beni takip ediyor
+                        followingUid: currentUserUid, // Ben takip ediliyorum
+                        status: 'accepted',
+                        timestamp: serverTimestamp()
+                    });
+                    
+                    // 2. Takipçi sayımı (currentUserUid) bir artır!
+                    // Bu kısım EKLENDİ
+                    const myUserRef = doc(db, "users", currentUserUid);
+                    await updateDoc(myUserRef, {
+                        followers: increment(1) 
                     });
-
-                    const htmlArray = await Promise.all(promises);
-                    container.innerHTML = htmlArray.join('');
-                }
-            } catch (error) {
-                console.error("İstekler çekilirken hata:", error);
-                container.innerHTML = "<p style='color:red; text-align:center;'>Bir hata oluştu.</p>";
-            }
-        }
-
-        // --- KABUL ET / REDDET FONKSİYONU (GÜNCELLENDİ) ---
-        window.processRequest = async function(reqId, requesterUid, isAccepted) {
-            const card = document.getElementById(`card-${reqId}`);
-            if(card) card.style.opacity = "0.5"; 
-
-            try {
-                if (isAccepted) {
-                    // KABUL EDİLİNCE:
-                    // 1. 'relationships' koleksiyonuna YENİ kayıt ekle (status: accepted)
-                    await addDoc(collection(db, "relationships"), {
-                        followerUid: requesterUid, // O beni takip ediyor
-                        followingUid: currentUserUid, // Ben takip ediliyorum
-                        status: 'accepted',
-                        timestamp: serverTimestamp()
-                    });
-                    console.log("İstek onaylandı ve ilişki oluşturuldu.");
-                } 
-                
-                // HER İKİ DURUMDA DA (Onayla veya Reddet):
-                // 'friendRequests' koleksiyonundaki isteği SİL
-                await deleteDoc(doc(db, "friendRequests", reqId));
-                console.log("İstek silindi.");
-
-                // Kartı UI'dan kaldır
-                if(card) {
-                    card.remove();
                     
-                    // Sayacı güncelle
-                    const countSpan = document.getElementById('reqCount');
-                    let currentCount = parseInt(countSpan.innerText.replace(/\D/g,''));
-                    if(currentCount > 0) {
-                        currentCount--;
-                        countSpan.innerText = `(${currentCount})`;
-                    }
-                    
-                    if(document.querySelectorAll('.request-card').length === 0) {
-                        document.getElementById('emptyState').style.display = 'block';
-                    }
-                }
+                    console.log("İstek onaylandı ve ilişki/sayım güncellendi.");
+                } 
+                
+                // HER İKİ DURUMDA DA (Onayla veya Reddet):
+                // 'friendRequests' koleksiyonundaki isteği SİL
+                await deleteDoc(doc(db, "friendRequests", reqId));
+                console.log("İstek silindi.");
 
-            } catch (error) {
-                console.error("İşlem hatası:", error);
-                alert("Hata oluştu.");
-                if(card) card.style.opacity = "1";
-            }
-        }
-    </script>
+                // Kartı UI'dan kaldır
+                if(card) {
+                    card.remove();
+                    
+                    // Sayacı güncelle
+                    const countSpan = document.getElementById('reqCount');
+                    let currentCount = parseInt(countSpan.innerText.replace(/\D/g,''));
+                    if(currentCount > 0) {
+                        currentCount--;
+                        countSpan.innerText = `(${currentCount})`;
+                    }
+                    
+                    if(document.querySelectorAll('.request-card').length === 0) {
+                        document.getElementById('emptyState').style.display = 'block';
+                    }
+                }
+
+            } catch (error) {
+                console.error("İşlem hatası:", error);
+                alert("Hata oluştu.");
+                if(card) card.style.opacity = "1";
+            }
+        }
+    </script>
 </body>
 </html>

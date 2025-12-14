@@ -1,375 +1,415 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Topluluklar - Just MSKU</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* --- GENEL AYARLAR --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-        body { background-color: #000; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topluluklar - Just MSKU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          // BURAYA KENDİ PUBLIC KEY'İNİ YAZ 
+          emailjs.init("0HFAh7CQIeDet-qKg");
+       })();
+    </script>
 
-        /* HEADER */
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 40px; background: #1a1a1a; border-bottom: 1px solid #333;
-            height: 70px; position: sticky; top: 0; z-index: 100;
-        }
-        header h1 { color: #24caac; font-size: 24px; cursor: pointer; }
-        
-        .header-right { display: flex; align-items: center; gap: 15px; }
+    <style>
+        /* --- GENEL AYARLAR --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body { background-color: #000; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
 
-        .search-box {
-            background: #333; padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; width: 250px;
-        }
-        .search-box input {
-            background: transparent; border: none; outline: none; color: white; margin-left: 10px; width: 100%;
-        }
-        
-        .btn {
-            padding: 8px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 13px;
-        }
-        .btn-primary { background: #24caac; color: #000; }
-        .btn-primary:hover { opacity: 0.9; }
-        .btn-secondary { background: #333; color: #fff; border: 1px solid #444; }
-        .btn-secondary:hover { background: #444; }
-        .btn-danger { background: #ff4b4b; color: white; }
-        .btn-danger:hover { background: #d43f3f; }
-        .btn-warning { background: #ff9800; color: #000; }
+        /* HEADER */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 40px; background: #1a1a1a; border-bottom: 1px solid #333;
+            height: 70px; position: sticky; top: 0; z-index: 100;
+        }
+        header h1 { color: #24caac; font-size: 24px; cursor: pointer; }
+        
+        .header-right { display: flex; align-items: center; gap: 15px; }
 
-        /* GRID YAPISI */
-        .container { max-width: 1000px; margin: 30px auto; width: 90%; }
-        
-        .page-title-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 10px; }
-        .page-title-area h2 { color: #fff; font-size: 28px; border-left: 5px solid #24caac; padding-left: 15px; margin-right: auto; }
+        .search-box {
+            background: #333; padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; width: 250px;
+        }
+        .search-box input {
+            background: transparent; border: none; outline: none; color: white; margin-left: 10px; width: 100%;
+        }
+        
+        .btn {
+            padding: 8px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; text-decoration: none; display: flex; align-items: center; gap: 8px; font-size: 13px;
+        }
+        .btn-primary { background: #24caac; color: #000; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { background: #333; color: #fff; border: 1px solid #444; }
+        .btn-secondary:hover { background: #444; }
+        .btn-danger { background: #ff4b4b; color: white; }
+        .btn-danger:hover { background: #d43f3f; }
+        .btn-warning { background: #ff9800; color: #000; }
 
-        .community-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
+        /* GRID YAPISI */
+        .container { max-width: 1000px; margin: 30px auto; width: 90%; }
+        
+        .page-title-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 10px; }
+        .page-title-area h2 { color: #fff; font-size: 28px; border-left: 5px solid #24caac; padding-left: 15px; margin-right: auto; }
 
-        .comm-card {
-            background: #1a1a1a; border: 1px solid #333; border-radius: 15px;
-            overflow: hidden; transition: 0.3s; cursor: pointer;
-            display: flex; flex-direction: column; position: relative;
-        }
-        .comm-card:hover { transform: translateY(-5px); border-color: #24caac; box-shadow: 0 5px 15px rgba(36,202,172,0.2); }
-        
-        /* SEÇİLİ KART STİLİ */
-        .comm-card.selected {
-            border: 2px solid #ff4b4b;
-            background: rgba(255, 75, 75, 0.1);
-        }
-        .comm-card.selected::after {
-            content: '\f00c';
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute; top: 10px; right: 10px;
-            background: #ff4b4b; color: white;
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-        }
-        
-        .comm-img { width: 100%; height: 120px; object-fit: cover; border-bottom: 1px solid #333; }
-        .comm-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
-        .comm-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #fff; }
-        .comm-desc { font-size: 13px; color: #aaa; margin-bottom: 15px; flex: 1; line-height: 1.4; }
-        .comm-stats { font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; }
+        .community-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
 
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: #1a1a1a; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #333; text-align: center; }
-        .modal input, .modal textarea { width: 100%; background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; outline: none; }
-        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+        .comm-card {
+            background: #1a1a1a; border: 1px solid #333; border-radius: 15px;
+            overflow: hidden; transition: 0.3s; cursor: pointer;
+            display: flex; flex-direction: column; position: relative;
+        }
+        .comm-card:hover { transform: translateY(-5px); border-color: #24caac; box-shadow: 0 5px 15px rgba(36,202,172,0.2); }
+        
+        /* SEÇİLİ KART STİLİ */
+        .comm-card.selected {
+            border: 2px solid #ff4b4b;
+            background: rgba(255, 75, 75, 0.1);
+        }
+        .comm-card.selected::after {
+            content: '\f00c';
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute; top: 10px; right: 10px;
+            background: #ff4b4b; color: white;
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .comm-img { width: 100%; height: 120px; object-fit: cover; border-bottom: 1px solid #333; }
+        .comm-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .comm-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #fff; }
+        .comm-desc { font-size: 13px; color: #aaa; margin-bottom: 15px; flex: 1; line-height: 1.4; }
+        .comm-stats { font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; }
 
-        /* BUTON GRUPLARI */
-        #normalActions { display: flex; gap: 10px; }
-        #deleteActions { display: none; gap: 10px; }
-    </style>
+        /* MODAL */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: #1a1a1a; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; border: 1px solid #333; text-align: center; }
+        .modal input, .modal textarea { width: 100%; background: #333; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; outline: none; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+
+        /* BUTON GRUPLARI */
+        #normalActions { display: flex; gap: 10px; }
+        #deleteActions { display: none; gap: 10px; }
+    </style>
 </head>
 <body>
 
-    <header>
-        <h1>Just MSKU <span style="font-size:14px; color:#888;">Topluluklar</span></h1>
-        <div class="header-right">
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass" style="color:#aaa;"></i>
-                <input type="text" id="searchInput" placeholder="Topluluk ara..." onkeyup="filterCommunities()">
-            </div>
-            <a href="pylsmgemini.html" class="btn btn-secondary"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
-        </div>
-    </header>
+    <header>
+        <h1>Just MSKU <span style="font-size:14px; color:#888;">Topluluklar</span></h1>
+        <div class="header-right">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass" style="color:#aaa;"></i>
+                <input type="text" id="searchInput" placeholder="Topluluk ara..." onkeyup="filterCommunities()">
+            </div>
+            <a href="pylsmgemini.html" class="btn btn-secondary"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
+        </div>
+    </header>
 
-    <div class="container">
-        <div class="page-title-area">
-            <h2 id="pageTitle">Tüm Topluluklar</h2>
-            
-            <div id="normalActions">
-                <button id="superAdminBtn" class="btn btn-danger" onclick="startDeleteMode()" style="display: none;">
-                    <i class="fa-solid fa-trash-can"></i> Gereksizleri Sil
-                </button>
-                
-                <button class="btn btn-primary" onclick="openModal()">
-                    <i class="fa-solid fa-plus"></i> Topluluk Ekle
-                </button>
-            </div>
+    <div class="container">
+        <div class="page-title-area">
+            <h2 id="pageTitle">Tüm Topluluklar</h2>
+            
+            <div id="normalActions">
+                <button id="superAdminBtn" class="btn btn-danger" onclick="startDeleteMode()" style="display: none;">
+                    <i class="fa-solid fa-trash-can"></i> Gereksizleri Sil
+                </button>
+                
+                <button class="btn btn-primary" onclick="openModal()">
+                    <i class="fa-solid fa-plus"></i> Topluluk Ekle
+                </button>
+            </div>
 
-            <div id="deleteActions">
-                <span style="font-size:14px; color:#ff4b4b; display:flex; align-items:center;">Silmek istediklerini seç</span>
-                <button class="btn btn-danger" onclick="confirmDeleteSelected()">
-                    <i class="fa-solid fa-check"></i> Seçilenleri Sil
-                </button>
-                <button class="btn btn-secondary" onclick="cancelDeleteMode()">
-                    <i class="fa-solid fa-xmark"></i> İptal
-                </button>
-            </div>
-        </div>
+            <div id="deleteActions">
+                <span style="font-size:14px; color:#ff4b4b; display:flex; align-items:center;">Silmek istediklerini seç</span>
+                <button class="btn btn-danger" onclick="confirmDeleteSelected()">
+                    <i class="fa-solid fa-check"></i> Seçilenleri Sil
+                </button>
+                <button class="btn btn-secondary" onclick="cancelDeleteMode()">
+                    <i class="fa-solid fa-xmark"></i> İptal
+                </button>
+            </div>
+        </div>
 
-        <div id="gridContainer" class="community-grid">
-            <div style="color:#888; grid-column: 1/-1; text-align:center;">Yükleniyor...</div>
-        </div>
-    </div>
+        <div id="gridContainer" class="community-grid">
+            <div style="color:#888; grid-column: 1/-1; text-align:center;">Yükleniyor...</div>
+        </div>
+    </div>
 
-    <div id="commModal" class="modal">
-        <div class="modal-content">
-            <h3 style="color:#25d0b0; margin-bottom:20px;">Yeni Topluluk Oluştur</h3>
-            <p style="font-size:12px; color:#aaa; margin-bottom:15px;">Not: Oluşturduğunuz topluluğun yöneticisi siz olursunuz.</p>
-            <input type="text" id="cName" placeholder="Topluluk Adı (Örn: Yapay Zeka Kulübü)">
-            <textarea id="cDesc" placeholder="Kısa açıklama..." rows="3"></textarea>
-            <div style="text-align:left; font-size:12px; color:#888; margin-bottom:5px;">Kapak Görseli:</div>
-            <input type="file" id="cFile" accept="image/*">
-            
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeModal()">İptal</button>
-                <button class="btn btn-primary" onclick="createCommunity()">Oluştur</button>
-            </div>
-        </div>
-    </div>
+    <div id="commModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color:#25d0b0; margin-bottom:20px;">Yeni Topluluk Oluştur</h3>
+            <p style="font-size:12px; color:#aaa; margin-bottom:15px;">Not: Oluşturduğunuz topluluğun yöneticisi siz olursunuz.</p>
+            <input type="text" id="cName" placeholder="Topluluk Adı (Örn: Yapay Zeka Kulübü)">
+            <textarea id="cDesc" placeholder="Kısa açıklama..." rows="3"></textarea>
+            <div style="text-align:left; font-size:12px; color:#888; margin-bottom:5px;">Kapak Görseli:</div>
+            <input type="file" id="cFile" accept="image/*">
+            
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">İptal</button>
+                <button class="btn btn-primary" onclick="createCommunity()">İstek Oluştur</button>             </div>
+        </div>
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, onSnapshot, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
-            authDomain: "justmsku.firebaseapp.com",
-            projectId: "justmsku",
-            storageBucket: "justmsku.firebasestorage.app",
-            messagingSenderId: "424626283802",
-            appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Global Değişkenler
-        let isDeleteMode = false;
-        let selectedCommunityIds = new Set();
-
-        // --- KİMLİK KONTROLÜ VE YETKİ ---
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // ÖZEL KONTROL: Eğer mail bu ise butonu göster
-                if (user.email === "abdulkadiroluc@posta.mu.edu.tr") {
-                    document.getElementById('superAdminBtn').style.display = "flex";
-                }
-
-                loadCommunities();
-            } else {
-                window.location.href = "login.html";
-            }
-        });
-
-        // --- TOPLULUKLARI LİSTELE (CANLI) ---
-        function loadCommunities() {
-            const grid = document.getElementById('gridContainer');
-            
-            const q = query(collection(db, "communities"), orderBy("createdAt", "desc"));
-            
-            onSnapshot(q, (snapshot) => {
-                grid.innerHTML = ''; 
-
-                if (snapshot.empty) {
-                    grid.innerHTML = '<div style="color:#888; text-align:center; grid-column:1/-1;">Henüz topluluk oluşturulmamış.</div>';
-                    return;
-                }
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const img = data.image || "https://via.placeholder.com/300x150?text=Topluluk";
-                    
-                    // Kart oluştur
-                    const cardDiv = document.createElement('div');
-                    cardDiv.className = 'comm-card';
-                    cardDiv.id = `card-${doc.id}`;
-                    cardDiv.onclick = () => handleCardClick(doc.id);
-
-                    cardDiv.innerHTML = `
-                        <img src="${img}" class="comm-img">
-                        <div class="comm-content">
-                            <div class="comm-title">${data.name}</div>
-                            <div class="comm-desc">${data.description}</div>
-                            <div class="comm-stats">
-                                <span><i class="fa-solid fa-users"></i> ${data.memberCount || 1} Üye</span>
-                                <span style="color:#24caac; font-weight:bold;" id="actionText-${doc.id}">İncele <i class="fa-solid fa-arrow-right"></i></span>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(cardDiv);
-                });
-                
-                if(isDeleteMode) renderSelectionState();
-            });
-        }
-
-        // --- TIKLAMA YÖNETİMİ ---
-        window.handleCardClick = function(id) {
-            if (isDeleteMode) {
-                // Silme modundaysak -> Seç/Bırak
-                if (selectedCommunityIds.has(id)) {
-                    selectedCommunityIds.delete(id);
-                } else {
-                    selectedCommunityIds.add(id);
-                }
-                renderSelectionState();
-            } else {
-                // Normal moddaysak -> Sayfaya git
-                window.location.href = 'topluluk-sayfa.html?id=' + id;
-            }
-        }
-
-        // --- SİLME MODU ---
-        window.startDeleteMode = function() {
-            isDeleteMode = true;
-            selectedCommunityIds.clear();
-            document.getElementById('normalActions').style.display = 'none';
-            document.getElementById('deleteActions').style.display = 'flex';
-            document.getElementById('pageTitle').innerText = "Silinecekleri Seç";
-            renderSelectionState(); 
-        }
-
-        window.cancelDeleteMode = function() {
-            isDeleteMode = false;
-            selectedCommunityIds.clear();
-            document.getElementById('normalActions').style.display = 'flex';
-            document.getElementById('deleteActions').style.display = 'none';
-            document.getElementById('pageTitle').innerText = "Tüm Topluluklar";
-            renderSelectionState(); 
-        }
-
-        function renderSelectionState() {
-            const cards = document.querySelectorAll('.comm-card');
-            cards.forEach(card => {
-                const id = card.id.replace('card-', '');
-                if (isDeleteMode) {
-                    if (selectedCommunityIds.has(id)) {
-                        card.classList.add('selected');
-                    } else {
-                        card.classList.remove('selected');
-                    }
-                    const actionText = card.querySelector(`#actionText-${id}`);
-                    if(actionText) actionText.innerText = "Seç";
-                } else {
-                    card.classList.remove('selected');
-                    const actionText = card.querySelector(`#actionText-${id}`);
-                    if(actionText) actionText.innerHTML = 'İncele <i class="fa-solid fa-arrow-right"></i>';
-                }
-            });
-        }
-
-        // --- SEÇİLENLERİ SİL ---
-        window.confirmDeleteSelected = async function() {
-            if (selectedCommunityIds.size === 0) {
-                return alert("Lütfen silmek için en az bir topluluk seçin.");
-            }
-            
-            if (!confirm(`${selectedCommunityIds.size} adet topluluğu ve içindeki tüm paylaşımları silmek istediğinize emin misiniz?`)) {
-                return;
-            }
-
-            const idsToDelete = Array.from(selectedCommunityIds);
-            
-            for (const id of idsToDelete) {
-                try {
-                    // 1. Postları sil
-                    const qPosts = query(collection(db, "posts"), where("communityId", "==", id));
-                    const postSnaps = await getDocs(qPosts);
-                    postSnaps.forEach(async (p) => await deleteDoc(p.ref));
-
-                    // 2. Üyeleri sil
-                    const qMembers = query(collection(db, "communityMembers"), where("communityId", "==", id));
-                    const memberSnaps = await getDocs(qMembers);
-                    memberSnaps.forEach(async (m) => await deleteDoc(m.ref));
-
-                    // 3. Topluluğu sil
-                    await deleteDoc(doc(db, "communities", id));
-                    
-                } catch (e) {
-                    console.error("Silme hatası: ", id, e);
-                }
-            }
-
-            alert("Seçilen topluluklar temizlendi.");
-            cancelDeleteMode(); 
-        }
-
-        // --- YENİ TOPLULUK OLUŞTUR ---
-        window.createCommunity = async function() {
-            const name = document.getElementById('cName').value;
-            const desc = document.getElementById('cDesc').value;
-            const file = document.getElementById('cFile').files[0];
-            
-            if(!name || !desc) return alert("Ad ve açıklama zorunludur.");
-
-            let imageBase64 = null;
-            if(file) {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, onSnapshot, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        // Bu helper, Base64 okuma işlemini Promise ile async/await yapısına uydurur.
+        function readFileAsBase64(file) {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => resolve(null); // Hata durumunda null döndür
                 reader.readAsDataURL(file);
-                reader.onload = async function () {
-                    imageBase64 = reader.result;
-                    saveToDB(name, desc, imageBase64);
-                };
-            } else {
-                saveToDB(name, desc, null);
-            }
-        }
-
-        async function saveToDB(name, desc, img) {
-            try {
-                await addDoc(collection(db, "communities"), {
-                    name: name,
-                    description: desc,
-                    image: img,
-                    createdAt: new Date(),
-                    createdBy: auth.currentUser.uid, 
-                    memberCount: 1,
-                    searchKey: name.toLowerCase()
-                });
-                closeModal();
-            } catch (e) {
-                console.error(e);
-                alert("Hata oluştu.");
-            }
-        }
-
-        // --- YARDIMCILAR ---
-        window.filterCommunities = function() {
-            const val = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.comm-card');
-            cards.forEach(card => {
-                const title = card.querySelector('.comm-title').innerText.toLowerCase();
-                if(title.includes(val)) card.style.display = 'flex';
-                else card.style.display = 'none';
             });
         }
 
-        window.openModal = () => document.getElementById('commModal').style.display = 'flex';
-        window.closeModal = () => document.getElementById('commModal').style.display = 'none';
-    </script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
+            authDomain: "justmsku.firebaseapp.com",
+            projectId: "justmsku",
+            storageBucket: "justmsku.firebasestorage.app",
+            messagingSenderId: "424626283802",
+            appId: "1:424626283802:web:83502f1c09cdcf9acd78a3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Global Değişkenler
+        let isDeleteMode = false;
+        let selectedCommunityIds = new Set();
+        let allCommunitiesCache = []; // Filtreleme için eklenmiştir
+
+        // --- KİMLİK KONTROLÜ VE YETKİ ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // ÖZEL KONTROL: Eğer mail bu ise butonu göster
+                if (user.email === "abdulkadiroluc@posta.mu.edu.tr") {
+                    document.getElementById('superAdminBtn').style.display = "flex";
+                }
+
+                loadCommunities();
+            } else {
+                // Anonim kullanıcılar için Toplulukların Görüntülenmesi burada başlayabilir,
+                // ancak mevcut kodunuz giriş yapmayı zorunlu kılıyor.
+                window.location.href = "login.html";
+            }
+        });
+
+        // --- TOPLULUKLARI LİSTELE (CANLI) ---
+        function loadCommunities() {
+            const grid = document.getElementById('gridContainer');
+            
+            const q = query(collection(db, "communities"), orderBy("createdAt", "desc"));
+            
+            onSnapshot(q, (snapshot) => {
+                allCommunitiesCache = [];
+                grid.innerHTML = ''; 
+
+                if (snapshot.empty) {
+                    grid.innerHTML = '<div style="color:#888; text-align:center; grid-column:1/-1;">Henüz topluluk oluşturulmamış.</div>';
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    allCommunitiesCache.push(data);
+                });
+                // Toplulukları filtreleme için yeniden render ediyoruz
+                renderCommunityGrid(allCommunitiesCache);
+            });
+        }
+
+        // Yeni eklenen render fonksiyonu (Filtreleme desteği için)
+        function renderCommunityGrid(dataList) {
+            const grid = document.getElementById('gridContainer');
+            grid.innerHTML = '';
+            
+            dataList.forEach(data => {
+                const img = data.image || "https://via.placeholder.com/300x150?text=Topluluk";
+                const isSelected = selectedCommunityIds.has(data.id) ? 'selected' : '';
+
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `comm-card ${isSelected}`;
+                cardDiv.id = `card-${data.id}`;
+                cardDiv.onclick = () => handleCardClick(data.id);
+
+                const actionText = isDeleteMode ? "Seç" : "İncele";
+
+                cardDiv.innerHTML = `
+                    <img src="${img}" class="comm-img">
+                    <div class="comm-content">
+                        <div class="comm-title">${data.name}</div>
+                        <div class="comm-desc">${data.description}</div>
+                        <div class="comm-stats">
+                            <span><i class="fa-solid fa-users"></i> ${data.memberCount || 1} Üye</span>
+                            <span style="color:#24caac; font-weight:bold;" id="actionText-${data.id}">${actionText} <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(cardDiv);
+            });
+            if(isDeleteMode) renderSelectionState();
+        }
+
+        // --- TIKLAMA YÖNETİMİ ---
+        window.handleCardClick = function(id) {
+            if (isDeleteMode) {
+                // Silme modundaysak -> Seç/Bırak
+                if (selectedCommunityIds.has(id)) {
+                    selectedCommunityIds.delete(id);
+                } else {
+                    selectedCommunityIds.add(id);
+                }
+                renderSelectionState();
+            } else {
+                // Normal moddaysak -> Sayfaya git
+                window.location.href = 'topluluk-sayfa.html?id=' + id;
+            }
+        }
+
+        // --- SİLME MODU ---
+        window.startDeleteMode = function() {
+            isDeleteMode = true;
+            selectedCommunityIds.clear();
+            document.getElementById('normalActions').style.display = 'none';
+            document.getElementById('deleteActions').style.display = 'flex';
+            document.getElementById('pageTitle').innerText = "Silinecekleri Seç";
+            renderSelectionState(); 
+        }
+
+        window.cancelDeleteMode = function() {
+            isDeleteMode = false;
+            selectedCommunityIds.clear();
+            document.getElementById('normalActions').style.display = 'flex';
+            document.getElementById('deleteActions').style.display = 'none';
+            document.getElementById('pageTitle').innerText = "Tüm Topluluklar";
+            renderSelectionState(); 
+        }
+
+        function renderSelectionState() {
+            const cards = document.querySelectorAll('.comm-card');
+            cards.forEach(card => {
+                const id = card.id.replace('card-', '');
+                if (isDeleteMode) {
+                    if (selectedCommunityIds.has(id)) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                    const actionText = card.querySelector(`#actionText-${id}`);
+                    if(actionText) actionText.innerText = "Seç";
+                } else {
+                    card.classList.remove('selected');
+                    const actionText = card.querySelector(`#actionText-${id}`);
+                    if(actionText) actionText.innerHTML = 'İncele <i class="fa-solid fa-arrow-right"></i>';
+                }
+            });
+        }
+
+        // --- SEÇİLENLERİ SİL ---
+        window.confirmDeleteSelected = async function() {
+            if (selectedCommunityIds.size === 0) {
+                return alert("Lütfen silmek için en az bir topluluk seçin.");
+            }
+            
+            if (!confirm(`${selectedCommunityIds.size} adet topluluğu ve içindeki tüm paylaşımları silmek istediğinize emin misiniz?`)) {
+                return;
+            }
+
+            const idsToDelete = Array.from(selectedCommunityIds);
+            
+            for (const id of idsToDelete) {
+                try {
+                    // 1. Postları sil
+                    const qPosts = query(collection(db, "posts"), where("communityId", "==", id));
+                    const postSnaps = await getDocs(qPosts);
+                    postSnaps.forEach(async (p) => await deleteDoc(p.ref));
+
+                    // 2. Üyeleri sil
+                    const qMembers = query(collection(db, "communityMembers"), where("communityId", "==", id));
+                    const memberSnaps = await getDocs(qMembers);
+                    memberSnaps.forEach(async (m) => await deleteDoc(m.ref));
+
+                    // 3. Topluluğu sil
+                    await deleteDoc(doc(db, "communities", id));
+                    
+                } catch (e) {
+                    console.error("Silme hatası: ", id, e);
+                }
+            }
+
+            alert("Seçilen topluluklar temizlendi.");
+            cancelDeleteMode(); 
+        }
+
+        // --- YENİ TOPLULUK OLUŞTUR (ASYNC/AWAIT ile Düzeltildi) ---
+        window.createCommunity = async function() {
+            const name = document.getElementById('cName').value.trim();
+            const desc = document.getElementById('cDesc').value.trim();
+            const file = document.getElementById('cFile').files[0];
+            const btn = document.querySelector('#commModal .btn-primary');
+            
+            if(!name || !desc) return alert("Ad ve açıklama zorunludur.");
+            
+            btn.innerText = "Gönderiliyor...";
+            btn.disabled = true;
+
+            try {
+                let imageBase64 = null;
+                if(file) {
+                    imageBase64 = await readFileAsBase64(file);
+                }
+                
+                // Artık doğrudan veritabanına yazabiliriz, çünkü Base64 hazır.
+                await addDoc(collection(db, "communities"), {
+                    name: name,
+                    description: desc,
+                    image: imageBase64,
+                    createdAt: new Date(),
+                    createdBy: auth.currentUser.uid, 
+                    memberCount: 1,
+                    searchKey: name.toLowerCase()
+                });
+                
+                alert("Topluluk isteği başarıyla oluşturuldu.");
+                closeModal();
+
+            } catch (e) {
+                console.error("Topluluk oluşturma hatası:", e);
+                alert("Oluşturma sırasında bir hata oluştu. (İzinler/Veri Kontrolü)");
+            } finally {
+                btn.innerText = "İstek Oluştur";
+                btn.disabled = false;
+            }
+        }
+
+        // --- YARDIMCILAR ---
+        window.filterCommunities = function() {
+            const val = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allCommunitiesCache.filter(c => c.name.toLowerCase().includes(val) || (c.description && c.description.toLowerCase().includes(val)));
+            renderCommunityGrid(filtered);
+        }
+
+        window.openModal = () => document.getElementById('commModal').style.display = 'flex';
+        window.closeModal = () => {
+            document.getElementById('commModal').style.display = 'none';
+            // Formu temizle
+            document.getElementById('cName').value = '';
+            document.getElementById('cDesc').value = '';
+            document.getElementById('cFile').value = '';
+        }
+    </script>
 </body>
 </html>

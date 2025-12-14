@@ -275,7 +275,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, addDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, addDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLRlyPJvO5tPtnuzNAtO6H0_t7mo_3qoU",
@@ -400,22 +400,45 @@
             });
         }
 
+        // --- KABUL ET / REDDET FONKSİYONU (GÜNCELLENMİŞ VERSİYON) ---
         window.processRequest = async function(reqId, requesterUid, isAccepted) {
             const item = document.getElementById(`req-${reqId}`);
             if(item) item.style.opacity = '0.5';
+    
             try {
                 if (isAccepted) {
+                    // 1. 'relationships' koleksiyonuna YENİ kayıt ekle (O beni takip ediyor)
                     await addDoc(collection(db, "relationships"), {
-                        followerUid: requesterUid, followingUid: currentUserUid, status: 'accepted', timestamp: serverTimestamp()
+                        followerUid: requesterUid, 
+                        followingUid: currentUserUid, 
+                        status: 'accepted', 
+                        timestamp: serverTimestamp()
                     });
-                    updateStats(currentUserUid);
+            
+                    // 2. TAKİPÇİ SAYISINI ARTIR (currentUserUid benim)
+                    const myUserRef = doc(db, "users", currentUserUid);
+                    // Firebase increment fonksiyonu, followers alanının 1 artırılmasını sağlar.
+                    await updateDoc(myUserRef, {
+                        followers: increment(1) 
+                    });
+            
                 } 
+        
+                // 3. İsteği Sil
                 await deleteDoc(doc(db, "friendRequests", reqId));
+        
+                // UI Güncelleme ve İstatistikleri Yenileme
                 if(item) item.remove();
                 const listDiv = document.getElementById('requestsList');
                 if(listDiv.children.length === 0) listDiv.innerHTML = '<div style="color:var(--text-sub); text-align:center;">Bekleyen istek yok.</div>';
+        
+                // İstatistikleri güncelle (Yeni takipçi sayısını gösterir)
+                updateStats(currentUserUid);
+
             } catch(e) {
-                console.error(e); alert("İşlem sırasında hata oluştu."); if(item) item.style.opacity = '1';
+                console.error("İşlem sırasında hata oluştu:", e); 
+                alert("İşlem sırasında hata oluştu. (Lütfen Firebase Kurallarını kontrol edin.)"); 
+                if(item) item.style.opacity = '1';
             }
         }
 
