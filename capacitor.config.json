@@ -1,8 +1,5 @@
 {
   "appId": "com.justmsku.app",
-  "appName": "Just MSKU",
-  "webDir": "docs", 
-  "server": {
-    "androidScheme": "https"
-  }
+  "appName": "vscode",
+  "webDir": "docs"
 }
