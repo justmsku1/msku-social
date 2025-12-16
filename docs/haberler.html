@@ -275,13 +275,34 @@
 
     <div class="main-container">
         <div class="sidebar">
-            <div class="nav-item active" onclick="showSection('home')"><i class="fa-solid fa-house"></i><span>Ana Sayfa</span></div>
-            <div class="nav-item" onclick="showSection('news')"><i class="fa-solid fa-newspaper"></i><span>Haberler</span></div>
+
+            <a class="nav-item" href="pylsmgemini.html">
+                <i class="fa-solid fa-house"></i>
+                <span>Ana Sayfa</span>
+            </a>
+
+            <a class="nav-item active" href="haberler.html">
+                <i class="fa-solid fa-newspaper"></i>
+                <span>Haberler</span>
+            </a>
+
+            <a class="nav-item" href="seyahat.html">
+                <i class="fa-solid fa-compass"></i>
+                <span>Seyahat</span>
+            </a>
+
             <div class="nav-item" onclick="showSection('explore')"><i class="fa-solid fa-compass"></i><span>Seyahat</span></div>
-            <div class="nav-item" onclick="showSection('chat')"><i class="fa-solid fa-comment"></i><span>Mesajlar</span></div>
-            <div class="nav-item" onclick="showSection('notes')"><i class="fa-solid fa-book"></i><span>Notlar</span></div>
+
+            <a class="nav-item" href="notlar.html">
+                <i class="fa-solid fa-book"></i>
+                <span>Notlar</span>
+            </a>
+
             <div class="nav-item" onclick="showSection('communities')"><i class="fa-solid fa-users"></i><span>Topluluklar</span></div>
+
         </div>
+
+
 
         <div class="content-area">
             <div class="container">
@@ -291,10 +312,8 @@
                     <div class="header-action-group">
                         
                         <button id="toggleDeleteModeBtn" onclick="toggleDeleteMode()" class="bulk-delete-btn" style="display:none;">
-                            <i class="fa-solid fa-trash-can"></i>&nbsp;Silme Modunu Aç
-                        </button>
-                        <button class="add-btn" onclick="openAddModal()">
-                            <i class="fa-solid fa-plus"></i> Haber Ekle
+                            <i class="fa-solid fa-trash-can"></i>&nbsp;Silme Modunu Aç</button>
+                        <button class="add-btn" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Haber Ekle
                         </button>
                     </div>
                 </div>
@@ -759,6 +778,12 @@
                  e.target.style.display = 'none';
              }
          }
+         document.querySelectorAll('.nav-item').forEach(item => {
+        if (item.getAttribute('href') === 'haberler.html') {
+            item.classList.add('active');
+        }
+    });
+
     </script>
 </body>
 </html>  
