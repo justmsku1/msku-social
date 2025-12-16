@@ -117,8 +117,10 @@
             .nav-item span { 
                 display: block; /* Yazıyı göster */
             }
-            .nav-item:hover { background: transparent; color: var(--text-main); }
-            .nav-item.active { background: transparent; color: var(--accent); } /* Alt bar aktif rengi */
+            .nav-item.active { 
+                background: transparent; 
+                color: var(--accent); /* Alt bar aktif rengi */
+            }
 
             /* 5. İçerik Alanı (Dikey Scroll) */
             .content-area { padding: 15px; }
@@ -254,21 +256,7 @@
         .header-controls a.back-btn { background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.3s; font-size: 13px; font-weight: 600; }
         .header-controls a.back-btn:hover { background: var(--accent); color: var(--accent-text); }
 
-        /* MOBİL UYUMU */
-        @media (max-width: 768px) {
-            .news-card { flex-direction: column; }
-            .news-img { width: 100%; height: 180px; }
-            .header-controls { gap: 5px; }
-            .news-actions { top: 5px; right: 5px; }
-            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .header-action-group { width: 100%; justify-content: space-between; }
-
-            .sidebar { width: 70px; align-items: center; } 
-            .nav-item span { display: none; } 
-            .nav-item { justify-content: center; width: 100%; padding: 15px 0; }
-            .nav-item i { margin: 0; font-size: 22px; }
-            .content-area { padding: 15px; padding-top: 0; }
-        }
+        
     </style>
 </head>
 <body>

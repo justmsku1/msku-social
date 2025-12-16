@@ -2232,16 +2232,16 @@
             const t = document.getElementById('postInput').value; 
             if(!t && !currentMediaData) return alert("Boş gönderi paylaşamazsınız."); 
             await addDoc(collection(db, "posts"), { 
-                uid: myUser.uid, 
-                username: myUser.username, 
+                uid: myUser.uid,
+                username: myUser.username,
                 userImg: myUser.photoURL || defaultUserImg,
-                text: t, 
-                mediaUrl: currentMediaData, 
-                type: currentMediaType || 'text', 
-                timestamp: new Date(), 
-                likes: 0, 
-                likedBy: [] 
-            }); 
+                text: t,
+                mediaUrl: currentMediaData,
+                type: currentMediaType || 'text',
+                timestamp: serverTimestamp(), // 🔥 DEĞİŞTİRİLEN KISIM
+                likes: 0,
+                likedBy: []
+            });
             document.getElementById('postInput').value = ""; 
             removeImage(); 
         }
