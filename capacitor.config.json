@@ -1,5 +1,14 @@
 {
   "appId": "com.justmsku.app",
-  "appName": "vscode",
-  "webDir": "docs"
+  "appName": "Just MSKU",
+  "webDir": "docs",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
 }
