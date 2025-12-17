@@ -508,7 +508,7 @@
                             <span id="cdDesc" style="font-size:13px; display:block; margin-top:5px; color:#ddd; line-height:1.4;">Açıklama yükleniyor...</span>
                             <span id="cdAdminBadge" class="admin-badge" style="display:none; background:#ffd700; color:#000; padding:3px 8px; font-size:10px; border-radius:5px; margin-top:5px; font-weight:bold; display:inline-block;">YÖNETİCİ</span>
                         </div>
-                        <button id="cdJoinBtn" class="join-btn join" onclick="toggleJoin()">Katıl</button>
+                        <button id="cdJoinBtn" class="join-btn join" onclick="joinCommunity(currentCommunityId)">Katıl</button>
                     </div>
                 </div>
 
@@ -1165,13 +1165,48 @@
         }
 
         window.joinCommunity = async function(commId) {
-            await addDoc(collection(db, "communityMembers"), { communityId: commId, userId: currentUserUid, joinedAt: new Date() });
-            await updateDoc(doc(db, "communities", commId), { memberCount: increment(1) });
-            alert("Topluluğa katıldın!");
-            checkMembership(commId);
-            // refresh suggestions so joined community is removed from recommended list
-            if (typeof loadCommunitySuggestions === 'function') loadCommunitySuggestions();
-        }
+            if (!currentUserUid) {
+                alert("Lütfen önce giriş yapın.");
+                return;
+            }
+
+            try {
+                // 1. ADIM: Mükerrer kaydı engellemek için kontrol et
+                const memberQuery = query(
+                    collection(db, "communityMembers"), 
+                    where("communityId", "==", commId), 
+                    where("userId", "==", currentUserUid)
+                );
+                const memberSnap = await getDocs(memberQuery);
+
+                if (!memberSnap.empty) {
+                    alert("Zaten bu topluluğun üyesisiniz!");
+                    return; 
+                }
+
+                // 2. ADIM: Üyelik kaydını oluştur
+                await addDoc(collection(db, "communityMembers"), { 
+                    communityId: commId, 
+                    userId: currentUserUid, 
+                    joinedAt: new Date() 
+                });
+
+                // 3. ADIM: Sayaç artırma
+                const commRef = doc(db, "communities", commId);
+                await updateDoc(commRef, { 
+            memberCount: increment(1) 
+                });
+
+                alert("Topluluğa katıldın!");
+
+                // Arayüz güncellemeleri
+                if (typeof checkMembership === 'function') checkMembership(commId);
+                if (typeof loadCommunitySuggestions === 'function') loadCommunitySuggestions();
+
+            } catch (error) {
+                console.error("Katılma hatası:", error);
+            }
+        };
 
         window.leaveCommunity = async function(commId, membershipDocId) {
             if(!confirm("Ayrılmak istiyor musun?")) return;

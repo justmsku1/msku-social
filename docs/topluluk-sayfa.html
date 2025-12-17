@@ -283,22 +283,44 @@
         window.toggleJoin = async function() {
             const btn = document.getElementById('joinBtn');
             const commRef = doc(db, "communities", communityId);
+    
+            // İşlem bitene kadar butonu kilitle
             btn.disabled = true;
-            if (isMember) {
-                if (confirm("Ayrılmak istiyor musun?")) {
-                    if (memberDocId) {
-                        await deleteDoc(doc(db, "communityMembers", memberDocId));
-                        await updateDoc(commRef, { memberCount: increment(-1) });
-                        isMember = false; memberDocId = null; btn.innerText = "Topluluğa Katıl"; btn.classList.remove("joined"); loadCommunityMembers();
+
+            try {
+                if (isMember) {
+                    // 1. Ayrılma İşlemi
+                    if (confirm("Bu topluluktan ayrılmak istediğine emin misin?")) {
+                        if (memberDocId) {
+                            await deleteDoc(doc(db, "communityMembers", memberDocId));
+                            await updateDoc(commRef, { memberCount: increment(-1) });
+                            isMember = false;
+                            memberDocId = null;
+                        }
                     }
+                } else {
+                    // 2. Katılma İşlemi
+                    const docRef = await addDoc(collection(db, "communityMembers"), { 
+                        communityId: communityId, 
+                        userId: currentUser.uid, 
+                        joinedAt: serverTimestamp() // serverTimestamp() kullandığından emin ol
+                    });
+                    await updateDoc(commRef, { memberCount: increment(1) });
+                    isMember = true;
+                    memberDocId = docRef.id;
                 }
-            } else {
-                const docRef = await addDoc(collection(db, "communityMembers"), { communityId: communityId, userId: currentUser.uid, joinedAt: new Date() });
-                await updateDoc(commRef, { memberCount: increment(1) });
-                isMember = true; memberDocId = docRef.id; btn.innerText = "Katıldın"; btn.classList.add("joined"); loadCommunityMembers();
+        
+                // Arayüzü güncelle
+                updateJoinBtnUI();
+                loadCommunityMembers(); // Üye listesini yenile
+        
+            } catch (error) {
+                console.error("Katılma/Ayrılma hatası:", error);
+                alert("İşlem gerçekleştirilemedi.");
+            } finally {
+                btn.disabled = false;
             }
-            btn.disabled = false;
-        }
+        };
 
         // --- 3. MEDYA YÜKLEME ---
         window.previewMedia = function(input) {
