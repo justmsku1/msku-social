@@ -330,14 +330,28 @@
         // --- 4. GÖNDERİLER ---
         function loadCommunityPosts() {
             const feed = document.getElementById('feedContainer');
-            const q = query(collection(db, "posts"), where("communityId", "==", communityId));
+            // Sadece bu topluluğa ait gönderileri çek
+            const q = query(
+                collection(db, "posts"), 
+                where("communityId", "==", communityId),
+                orderBy("timestamp", "desc") // En yeni en üstte
+            );
+
             onSnapshot(q, (snapshot) => {
                 feed.innerHTML = '';
-                if(snapshot.empty) { feed.innerHTML = '<div class="empty-msg">Henüz gönderi yok.</div>'; return; }
-                let posts = [];
-                snapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
-                posts.sort((a, b) => b.timestamp - a.timestamp);
-                posts.forEach(post => createPostHTML(post.id, post));
+                if(snapshot.empty) { 
+                    feed.innerHTML = '<div class="empty-msg">Bu toplulukta henüz gönderi yok.</div>'; 
+                    return; 
+                }
+
+                snapshot.forEach(doc => {
+                    createPostHTML(doc.id, doc.data());
+                });
+            }, (error) => {
+                console.error("Gönderi çekme hatası: ", error);
+                // Eğer konsolda "The query requires an index" hatası görürsen 
+                // orada verilen linke tıklayarak indeksi oluşturmalısın.
+                feed.innerHTML = '<div class="empty-msg">Gönderiler yüklenemedi.</div>';
             });
         }
 
@@ -389,13 +403,29 @@
             if(currentUser.uid !== communityAdminId) return alert("Yetkiniz yok!");
             const text = document.getElementById('postInput').value;
             if(!text && !currentMediaData) return alert("Boş gönderi paylaşılamaz.");
+
             const userDoc = await getDoc(doc(db, "users", currentUser.uid));
             const userData = userDoc.exists() ? userDoc.data() : { username: "Anonim", photoURL: "" };
-            await addDoc(collection(db, "posts"), {
-                communityId: communityId, uid: currentUser.uid, username: userData.username, userImg: userData.photoURL,
-                text: text, mediaUrl: currentMediaData, type: currentMediaType || 'text', timestamp: new Date(), likes: 0, likedBy: []
-            });
-            document.getElementById('postInput').value = ""; removeMedia();
+
+            try {
+                await addDoc(collection(db, "posts"), {
+                    communityId: communityId, // Topluluk ID'si burada kritik!
+                    uid: currentUser.uid,
+                    username: userData.username,
+                    userImg: userData.photoURL,
+                    text: text,
+                    mediaUrl: currentMediaData,
+                    type: currentMediaType || 'text',
+                    timestamp: serverTimestamp(), // Bunu serverTimestamp() yap (yukarıda import etmelisin)
+                    likes: 0,
+                    likedBy: []
+                });
+                document.getElementById('postInput').value = ""; 
+                removeMedia();
+                alert("Gönderi paylaşıldı!");
+            } catch (e) {
+                console.error("Paylaşım hatası: ", e);
+            }
         }
 
         // --- 6. ÜYELER ---

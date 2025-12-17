@@ -1475,6 +1475,9 @@
             let dateStr = post.timestamp ? new Date(post.timestamp.seconds * 1000).toLocaleDateString("tr-TR") : "Az önce";
             const isLiked = post.likedBy && post.likedBy.includes(currentUserUid); const heartIcon = isLiked ? 'fa-solid' : 'fa-regular'; const likeClass = isLiked ? 'liked' : '';
             
+            // Beğeni durumuna göre metni belirle
+            
+            const likeText = isLiked ? "Beğenmekten Vazgeç" : "Beğen"; // 🔥 BU SATIRI EKLEMELİSİNİZ
             const html = `
             <div class="feed-post" id="${postId}" style="border: 1px solid #333;">
                 <div class="post-header">
@@ -2169,6 +2172,24 @@
                 if (!hasContent) {
                      feed.innerHTML = '<div class="empty-msg" style="text-align:center; padding:20px; color:#888;">Akışın boş.<br>Birilerini takip et veya bir şeyler paylaş!</div>';
                 }
+                snapshot.forEach(doc => { 
+                    const post = doc.data();
+    
+                    // 1. Gizli gönderi kontrolü (Zaten var)
+                    if (hiddenPostIds.has(doc.id)) return;
+
+                    // --- YENİ EKLENEN KISIM: Topluluk Gönderisi Filtresi ---
+                    // Eğer gönderinin bir communityId'si varsa, bu bir topluluk gönderisidir. 
+                    // Ana sayfada (akışta) görünmemesi için pas geçiyoruz.
+                    if (post.communityId) return; 
+                    // -----------------------------------------------------
+    
+                    // 2. Takip kontrolü (Zaten var)
+                    if (allowedUids.includes(post.uid)) {
+                        createPostHTML(doc.id, post);
+                        hasContent = true;
+                    }
+                });
             }); 
         }
 
