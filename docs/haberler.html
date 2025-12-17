@@ -54,7 +54,7 @@
         .nav-item { 
             display: flex; align-items: center; gap: 15px; padding: 12px 15px; 
             background: transparent; border-radius: 12px; cursor: pointer; transition: 0.3s; 
-            color: var(--text-sub); font-weight: 600; font-size: 14px; position: relative;
+            color: var(#24caac); font-weight: 600; font-size: 14px; position: relative;
             text-decoration: none; /* Linkler için */
         }
         .nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
@@ -70,68 +70,7 @@
         .header-controls a.back-btn:hover { background: var(--accent); color: var(--accent-text); }
 
 
-        /* --- MOBİL UYUMU (768px Altı) --- */
-        @media (max-width: 768px) {
-            /* 1. Header (Üst Kısım) */
-            header { padding: 10px 15px; }
-            .header-controls { gap: 5px; }
-
-            /* 2. Main Container Düzenlemesi */
-            .main-container { 
-                flex-direction: column;
-                padding-bottom: 60px; /* Alt bar için boşluk bırak */
-            }
-    
-            /* 3. MOBİL ALT NAVİGASYON (Sidebar'ı dönüştür) */
-            .sidebar {
-                width: 100%;
-                height: 60px; /* Sabit yükseklik */
-                padding: 0;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                border-right: none;
-                border-top: 1px solid var(--border-color);
-                flex-direction: row; /* Yatay hizalama */
-                justify-content: space-around; /* Eşit aralık */
-                align-items: center;
-                z-index: 1000;
-                box-shadow: 0 -4px 10px rgba(0,0,0,0.5);
-            }
-    
-            /* 4. Navigasyon Öğeleri */
-            .nav-item {
-                flex-direction: column; /* İkon üstte, yazı altta */
-                padding: 8px 5px;
-                border-radius: 0;
-                gap: 2px;
-                font-size: 10px; /* Yazıları küçült */
-                font-weight: 500;
-                min-width: 60px;
-             text-align: center;
-            }
-            .nav-item i { 
-                font-size: 18px; 
-                width: auto;
-            }
-            .nav-item span { 
-                display: block; /* Yazıyı göster */
-            }
-            .nav-item.active { 
-                background: transparent; 
-                color: var(--accent); /* Alt bar aktif rengi */
-            }
-
-            /* 5. İçerik Alanı (Dikey Scroll) */
-            .content-area { padding: 15px; }
-
-            /* 6. Haber Kartları Mobil Düzenlemesi */
-            .news-card { flex-direction: column; }
-            .news-img { width: 100%; height: 180px; }
-            .news-actions { top: 5px; right: 5px; }
-            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .header-action-group { width: 100%; justify-content: space-between; }
-        }
+        
 
         /* LIGHT MODE */
         body.light-mode {
@@ -255,6 +194,51 @@
         /* HEADER BUTONLARI */
         .header-controls a.back-btn { background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: 0.3s; font-size: 13px; font-weight: 600; }
         .header-controls a.back-btn:hover { background: var(--accent); color: var(--accent-text); }
+        /* --- MOBİL ALT BAR DÜZELTMESİ --- */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 70px !important; /* Alt barın içeriği kapatmasını engeller */
+            }
+
+            .sidebar {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 65px !important;
+                flex-direction: row !important; /* 🔥 İkonları yan yana dizer */
+                justify-content: space-around !important;
+                align-items: center !important;
+                background: var(--bg-panel) !important;
+                border-top: 1px solid var(--border-color) !important;
+                z-index: 9999 !important;
+                padding: 0 !important;
+                display: flex !important;
+            }
+
+            .nav-item {
+                flex-direction: column !important; /* İkon üstte yazı altta */
+                gap: 2px !important;
+                padding: 5px !important;
+                flex: 1 !important;
+                text-align: center !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+
+            .nav-item span {
+                display: block !important;
+                font-size: 10px !important;
+            }
+
+            .nav-item i {
+                font-size: 20px !important;
+                width: auto !important;
+        }
+
+            /* Masaüstü dikey ayarlarını mobilde iptal et */
+            .sidebar { width: 100% !important; }
+        }
 
         
     </style>
@@ -286,19 +270,25 @@
                 <span>Haberler</span>
             </a>
 
-            <a class="nav-item" href="seyahat.html">
+            <a class="nav-item" href="pylsmgemini.html?section=explore">
                 <i class="fa-solid fa-compass"></i>
                 <span>Seyahat</span>
             </a>
 
-            <div class="nav-item" onclick="showSection('explore')"><i class="fa-solid fa-compass"></i><span>Seyahat</span></div>
+            <a class="nav-item" href="pylsmgemini.html?section=chat">
+                <i class="fa-solid fa-comment"></i>
+                <span>Mesajlar</span>
+            </a>
 
             <a class="nav-item" href="notlar.html">
                 <i class="fa-solid fa-book"></i>
                 <span>Notlar</span>
             </a>
 
-            <div class="nav-item" onclick="showSection('communities')"><i class="fa-solid fa-users"></i><span>Topluluklar</span></div>
+            <a class="nav-item" href="pylsmgemini.html?section=communities">
+                <i class="fa-solid fa-users"></i>
+                <span>Topluluklar</span>
+            </a>
 
         </div>
 

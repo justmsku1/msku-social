@@ -805,6 +805,37 @@
                 window.location.href = "login.html";
             }
         });
+        // --- URL'DEN GELEN BÖLÜMÜ OTOMATİK AÇMA SİSTEMİ ---
+        function checkUrlAndShowSection() {
+            const params = new URLSearchParams(window.location.search);
+            const section = params.get('section');
+
+            if (section) {
+                // Eğer geçerli bir section parametresi varsa, o bölümü göster
+                console.log("Yönlendirilen bölüm açılıyor:", section);
+        
+                // Bazı bölümlerin isimleri showSection fonksiyonundakinden farklı olabilir, kontrol edelim
+                const sectionMap = {
+                    'explore': 'explore',
+                    'chat': 'chat',
+                    'messages': 'chat', // alternatif isim
+                    'notes': 'notes',
+                    'communities': 'communities'
+                };
+
+                const targetSection = sectionMap[section] || section;
+        
+                // Sayfa tam yüklenene kadar 500ms bekleyip fonksiyonu çalıştır
+                setTimeout(() => {
+                    if (typeof window.showSection === 'function') {
+                        window.showSection(targetSection);
+                    }
+                }, 500);
+            }
+        }
+
+        // Hem sayfa yüklendiğinde hem de URL değiştiğinde çalıştır
+        window.addEventListener('load', checkUrlAndShowSection);
 
         const mskuData = { 
             "Mühendislik Fakültesi": { icon: "fa-solid fa-laptop-code", bolumler: ["Elektrik-Elektronik Mühendisliği","Bilgisayar Mühendisliği", "İnşaat Mühendisliği", "Yazılım Mühendisliği", "Maden Mühendisliği"] }, 
