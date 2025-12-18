@@ -238,6 +238,25 @@
 
             /* Masaüstü dikey ayarlarını mobilde iptal et */
             .sidebar { width: 100% !important; }
+            /* --- Üst Başlık ve Butonlar İçin Ekleme --- */
+            .page-header {
+                flex-direction: column !important; /* Başlık ve butonları alt alta al */
+                align-items: flex-start !important;
+                gap: 15px !important;
+            }
+
+            .header-action-group {
+                width: 100% !important;
+                justify-content: space-between !important; /* Butonları sağa sola yay */
+                flex-wrap: wrap !important; /* Sığmazsa alt satıra geç */
+            }
+
+            .add-btn, .bulk-delete-btn {
+                padding: 8px 12px !important; /* Kenar boşluklarını daralt */
+                font-size: 12px !important; /* Yazıyı küçült */
+                flex: 1; /* Butonların genişliğini eşitle */
+                justify-content: center;
+            }
         }
 
         
