@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <title>Just MSKU</title>
+    <title>Just MSKU | Öğrenci Platformu</title>
 
     <style>
-        /* --- SIFIRLAMA --- */
+        /* --- TEMEL SIFIRLAMA --- */
         * {
             margin: 0;
             padding: 0;
@@ -22,43 +22,57 @@
             min-height: 100vh;
         }
 
-        /* --- ARKA PLAN ANİMASYONU --- */
-        .bg-glow {
+        /* --- CANLI VE BELİRGİN İKON ARKA PLANI --- */
+        .bg-animation {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            /* Arka planda hafif bir derinlik için gradient */
+            background: radial-gradient(circle at center, #0a1f1c 0%, #000 100%);
             overflow: hidden;
         }
 
-        .particle {
+        .floating-icon {
             position: absolute;
-            background: rgba(36, 202, 172, 0.4); /* MSKU Turkuazı */
-            border-radius: 50%;
+            /* İkonlar artık daha opak ve belirgin */
+            color: rgba(36, 202, 172, 0.85); 
+            user-select: none;
             pointer-events: none;
-            animation: floatUp 15s infinite linear;
+            /* Neon Parlama Efekti */
+            filter: drop-shadow(0 0 12px rgba(36, 202, 172, 0.6)); 
+            animation: floatUp linear infinite;
+            font-style: normal;
         }
 
         @keyframes floatUp {
-            0% { transform: translateY(100vh) scale(0); opacity: 0; }
-            50% { opacity: 0.5; }
-            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+            0% {
+                transform: translateY(110vh) rotate(0deg) scale(0.6);
+                opacity: 0;
+            }
+            15% { opacity: 1; } /* Hızlı görünürlük */
+            85% { opacity: 1; }
+            100% {
+                transform: translateY(-20vh) rotate(360deg) scale(1.3);
+                opacity: 0;
+            }
         }
 
-        /* --- HEADER --- */
+        /* --- NAVİGASYON --- */
         header {
             width: 100%;
-            background-color: rgba(26, 26, 26, 0.9);
-            padding: 15px 30px;
-            position: relative;
-            z-index: 10;
-            backdrop-filter: blur(10px);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px 30px;
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(36, 202, 172, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .login {
+        .login-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -76,25 +90,28 @@
             text-decoration: none;
             color: #fff;
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: 0.3s;
         }
 
         .nav_links li a:hover {
             color: #24caac;
+            text-shadow: 0 0 10px rgba(36, 202, 172, 0.5);
         }
 
         .logo h2 a {
             text-decoration: none;
             color: #24caac;
-            font-weight: 800;
+            font-weight: 900;
+            font-size: 1.8rem;
         }
 
-        /* --- ANA SAYFA DÜZENİ --- */
+        /* --- ANA İÇERİK --- */
         #anasayfa {
-            width: 100%;
             display: flex;
             justify-content: center;
-            padding: 80px 30px;
+            align-items: center;
+            padding: 60px 30px;
+            min-height: 85vh;
         }
 
         .inner_anasayfa {
@@ -103,94 +120,92 @@
             justify-content: space-between;
             width: 100%;
             max-width: 1200px;
-            gap: 40px;
+            gap: 50px;
+            position: relative;
         }
 
-        /* --- GİRİŞ ANİMASYONU (FADE IN UP) --- */
-        .child_anasayfa {
-            flex: 1;
-            opacity: 0;
-            animation: fadeInUp 1s ease-out forwards;
+        .content_box {
+            flex: 1.2;
+            animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
+            from { opacity: 0; transform: translateY(50px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .child_anasayfa h1 {
-            font-size: 3.5rem;
-            line-height: 1.1;
-            margin-bottom: 20px;
+        .content_box h1 {
+            font-size: 4.2rem;
+            line-height: 1;
+            margin-bottom: 25px;
             font-weight: 900;
         }
 
-        .text-green { color: #24caac; display: block; }
-        .text-blue { color: #007bff; display: block; }
+        .text-green { color: #24caac; }
+        .text-blue { color: #0084ff; }
 
-        .child_anasayfa p {
-            margin-bottom: 35px;
-            font-size: 1.3rem;
-            color: #bbb;
+        .content_box p {
+            margin-bottom: 40px;
+            font-size: 1.4rem;
+            color: #efefef;
+            font-weight: 300;
+            max-width: 550px;
         }
 
-        /* --- LOGO VE YÜZME ANİMASYONU --- */
-        .inner_anasayfa img {
-            flex: 1;
-            max-width: 450px;
-            height: auto;
-            object-fit: contain;
-            animation: floatLogo 5s ease-in-out infinite;
+        /* --- LOGO VE HAREKET --- */
+        .hero-img {
+            flex: 0.8;
+            max-width: 480px;
+            filter: drop-shadow(0 0 40px rgba(36, 202, 172, 0.4));
+            animation: floatLogo 6s ease-in-out infinite;
         }
 
         @keyframes floatLogo {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(2deg); }
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.03); }
         }
 
         /* --- BUTON --- */
-        .btn {
-            padding: 16px 40px;
-            background-color: #fff;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+        .btn-main {
+            display: inline-block;
+            padding: 22px 55px;
+            background: #fff;
+            border-radius: 60px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            color: #000;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 40px rgba(36, 202, 172, 0.3);
         }
 
-        .btn a {
-            text-decoration: none; 
-            color: #1a1a1a; 
-            font-weight: 700; 
-            font-size: 1rem;
-        }
-
-        .btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 6px 20px rgba(36, 202, 172, 0.4);
-            background-color: #24caac;
-        }
-        
-        .btn:hover a {
+        .btn-main:hover {
+            transform: scale(1.1) translateY(-5px);
+            background: #24caac;
             color: #fff;
+            box-shadow: 0 20px 50px rgba(36, 202, 172, 0.6);
         }
 
-        /* --- RESPONSIVE --- */
+        /* --- MOBİL UYUMLULUK --- */
+        @media (max-width: 1024px) {
+            .content_box h1 { font-size: 3.2rem; }
+            .hero-img { max-width: 350px; }
+        }
+
         @media (max-width: 768px) {
             .inner_anasayfa { flex-direction: column-reverse; text-align: center; }
-            .nav_links { display: none; } /* Mobil için menü gizleme örneği */
-            .child_anasayfa h1 { font-size: 2.5rem; }
-            .inner_anasayfa img { max-width: 80%; }
+            .nav_links { display: none; } /* Mobil menü buraya eklenebilir */
+            .content_box h1 { font-size: 2.8rem; }
+            .content_box p { margin: 0 auto 30px auto; }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-glow" id="particle-container"></div>
+    <div class="bg-animation" id="bg-animation"></div>
 
     <header>
-        <div class="login">
+        <div class="login-container">
             <div class="logo">
                 <h2><a href="#">Just MSKU</a></h2>
             </div>
@@ -205,49 +220,60 @@
 
     <section id="anasayfa">
         <div class="inner_anasayfa">
-            <div class="child_anasayfa">
+            <div class="content_box">
                 <h1>
-                    <span class="text-green">MSKU <br> öğrencisi <br> misin?</span>
-                    <span class="text-blue">Ne <br> bekliyorsun?</span>
+                    <span class="text-green">MSKU</span><br>
+                    <span class="text-green">öğrencisi</span><br>
+                    <span class="text-green">misin?</span><br>
+                    <span class="text-blue">Ne bekliyorsun?</span>
                 </h1>
-                <p>Üniversitene özel dijital dünyaya adım at.</p>
+                <p>Üniversitene özel dijital kampüs deneyimine hoş geldin. Aradığın her şey burada!</p>
                 
-                <button class="btn">
-                    <a href="kayıt.html">Hesap Oluştur</a>
-                </button>
+                <a href="kayıt.html" class="btn-main">Hemen Katıl</a>
             </div>
             
-            <img src="img/Mugla_Sitki_Kocman_University_logo_imtiyaz_31711e8adf.png" alt="MSKU Logo">
+            <img src="img/Mugla_Sitki_Kocman_University_logo_imtiyaz_31711e8adf.png" class="hero-img" alt="MSKU Logo">
         </div>
     </section>
 
     <script>
-        // Arka plandaki parçacıkları oluşturan fonksiyon
-        function createParticles() {
-            const container = document.getElementById('particle-container');
-            const particleCount = 50; 
+        // Arka planda yüzecek ikonların listesi
+        const academicIcons = ['📖', '🎓', '💻', '📝', '📚', '🧪', '🔭', '📱', '🎨', '🏫', '🧠', '🔬'];
+        const bgContainer = document.getElementById('bg-animation');
 
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                
-                const size = Math.random() * 4 + 2 + 'px';
-                const left = Math.random() * 100 + '%';
-                const duration = Math.random() * 10 + 10 + 's';
-                const delay = Math.random() * 5 + 's';
+        function createFloatingIcon() {
+            const icon = document.createElement('div');
+            icon.classList.add('floating-icon');
+            
+            // Rastgele ikon seç
+            icon.innerText = academicIcons[Math.floor(Math.random() * academicIcons.length)];
+            
+            // Rastgele özellikler
+            const startX = Math.random() * 100; // Yatay pozisyon
+            const duration = Math.random() * 7 + 6; // Hız (6-13 sn)
+            const size = Math.random() * 2 + 1.5; // Boyut (1.5rem - 3.5rem)
+            const rotation = Math.random() * 360; // Başlangıç açısı
+            
+            icon.style.left = startX + '%';
+            icon.style.animationDuration = duration + 's';
+            icon.style.fontSize = size + 'rem';
+            icon.style.transform = `rotate(${rotation}deg)`;
 
-                particle.style.width = size;
-                particle.style.height = size;
-                particle.style.left = left;
-                particle.style.bottom = '-20px';
-                particle.style.animationDuration = duration;
-                particle.style.animationDelay = delay;
+            bgContainer.appendChild(icon);
 
-                container.appendChild(particle);
-            }
+            // Animasyon bitince elementi temizle (Bellek yönetimi)
+            setTimeout(() => {
+                icon.remove();
+            }, duration * 1000);
         }
 
-        window.onload = createParticles;
+        // İlk açılışta ekrana ikonları serpiştir
+        for(let i = 0; i < 20; i++) {
+            setTimeout(createFloatingIcon, Math.random() * 3000);
+        }
+
+        // Her 700ms'de bir yeni ikon ekle (Daha yoğun bir görünüm için)
+        setInterval(createFloatingIcon, 700);
     </script>
 </body>
 </html>
