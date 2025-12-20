@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f0f11;
+            --panel-bg: #18181b;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --accent-purple: #a855f7;
+            --text-main: #e4e4e7;
+            --border: #27272a;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- LAUNCHER --- */
+        #launcher {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1f1f23 0%, #000 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: transform 0.5s ease-in-out;
+        }
+        #launcher.hidden { transform: translateY(-100%); }
+
+        .launcher-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 50px;
+            background: linear-gradient(to right, #3b82f6, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .card-container { display: flex; gap: 30px; }
+
+        .mode-card {
+            width: 250px;
+            height: 300px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .mode-card:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-10px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+        }
+        .mode-icon { font-size: 3rem; margin-bottom: 20px; }
+        .mode-name { font-size: 1.2rem; font-weight: 600; }
+        .mode-desc { font-size: 0.8rem; color: #888; text-align: center; padding: 10px; }
+
+        /* --- MAIN APP --- */
+        #app-container {
+            display: grid;
+            grid-template-columns: 260px 1fr 300px;
+            grid-template-rows: 50px 1fr 240px;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.5s;
+        }
+        #app-container.visible { opacity: 1; }
+
+        .app-header {
+            grid-column: 1 / 4;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .back-btn {
+            background: #333;
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .back-btn:hover { background: var(--accent-red); }
+
+        .panel {
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; color: #a1a1aa; margin-bottom: 5px; }
+        input[type="number"] {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+        input:focus { border-color: var(--accent-blue); outline: none; }
+
+        /* VISUAL AREA */
+        .visual-area {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            background: #000;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        svg { width: 90%; height: 90%; }
+        
+        .float-inp {
+            position: absolute;
+            background: rgba(24, 24, 27, 0.9);
+            border: 1px solid #444;
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .float-inp input { width: 80px; text-align: center; border: none; border-bottom: 1px solid #555; background: transparent; padding: 2px; font-size: 1.1rem; }
+
+        /* LOAD CONTROLS */
+        .load-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .load-btn {
+            flex: 1;
+            padding: 8px;
+            cursor: pointer;
+            background: #333;
+            border: none;
+            color: #888;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .load-btn:hover { background: #444; }
+        
+        .load-inputs-container {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .grid-1 { grid-template-columns: 1fr; }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+        .load-field { display: none; } /* Hidden by default */
+        .load-field.active { display: block; }
+
+        /* RESULTS */
+        .res-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #27272a;
+            font-size: 0.85rem;
+        }
+        .res-val { font-family: 'JetBrains Mono'; font-weight: bold; }
+
+        /* BOTTOM AREA */
+        .bottom-area {
+            grid-column: 1 / 4;
+            grid-row: 3 / 4;
+            background: #050505;
+            border-top: 1px solid var(--border);
+            display: flex;
+            position: relative;
+        }
+
+        .scope-container {
+            flex: 1;
+            position: relative;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .phasor-container {
+            width: 240px;
+            background: #0a0a0a;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .phasor-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.7rem;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .scope-controls {
+            height: 40px;
+            background: #111;
+            border-bottom: 1px solid #222;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 15px;
+        }
+        .icon-btn {
+            background: #222;
+            border: 1px solid #333;
+            color: #eee;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .icon-btn:hover { background: #333; }
+        .icon-btn.active { background: var(--accent-red); border-color: var(--accent-red); }
+
+        input[type=range] { -webkit-appearance: none; width: 100px; height: 4px; background: #333; border-radius: 2px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--accent-blue); border-radius: 50%; cursor: pointer; }
+
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="launcher">
+        <div class="launcher-title">Transformer Simulation<br><span style="font-size:1rem; opacity:0.7">Complete Edition</span></div>
+        <div class="card-container">
+            <div class="mode-card" onclick="startApp('1ph')">
+                <div class="mode-icon">⚡</div>
+                <div class="mode-name">SINGLE PHASE</div>
+                <div class="mode-desc">Standard transformer with adaptable load (R, L, C, or Mixed).</div>
+            </div>
+            <div class="mode-card" onclick="startApp('3ph')">
+                <div class="mode-icon">🏭</div>
+                <div class="mode-name">3 PHASE</div>
+                <div class="mode-desc">Industrial 3-leg core, R-S-T phase analysis.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container">
+        
+        <div class="app-header">
+            <h2 id="app-title" style="margin:0; font-size:1rem; letter-spacing:1px;">SINGLE PHASE MODE</h2>
+            <button class="back-btn" onclick="goBack()">← CHANGE MODE</button>
+        </div>
+
+        <div class="panel">
+            <div class="input-group">
+                <label>Input Voltage (<span id="v-label">Vp</span>)</label>
+                <input type="number" id="Vp" value="220" oninput="update()">
+            </div>
+            <div class="input-group">
+                <label>Frequency (Hz)</label>
+                <input type="number" id="freq" value="50" oninput="update()">
+            </div>
+        </div>
+
+        <div class="visual-area">
+            <div id="floating-inputs">
+                <div class="float-inp" style="top:20%; left:15%">
+                    <label style="font-size:0.6rem; color:#3b82f6">N (Input)</label>
+                    <input type="number" id="Np" value="500" step="10" oninput="update()">
+                </div>
+                <div class="float-inp" style="top:20%; right:15%">
+                    <label style="font-size:0.6rem; color:#ef4444">N (Output)</label>
+                    <input type="number" id="Ns" value="100" step="10" oninput="update()">
+                </div>
+            </div>
+
+            <svg viewBox="0 0 800 400" id="main-svg">
+                <defs>
+                    <linearGradient id="metal-grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#3f3f46"></stop>
+                        <stop offset="50%" stop-color="#52525b"></stop>
+                        <stop offset="100%" stop-color="#3f3f46"></stop>
+                    </linearGradient>
+                </defs>
+                <g id="drawing-layer"></g>
+            </svg>
+        </div>
+
+        <div class="panel">
+            
+            <div style="margin-bottom:20px; padding:15px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                <label>SYSTEM STATUS</label>
+                <div style="font-size:0.8rem; color:#888; margin-top:5px;" id="system-info">
+                    Select a load type below.
+                </div>
+            </div>
+
+            <label style="margin-bottom:10px;">Load Configuration</label>
+            
+            <div class="load-buttons">
+                <button class="load-btn" id="btn-R" onclick="setLoad('R')">R</button>
+                <button class="load-btn" id="btn-L" onclick="setLoad('L')">L</button>
+                <button class="load-btn" id="btn-C" onclick="setLoad('C')">C</button>
+                <button class="load-btn" id="btn-RLC" onclick="setLoad('RLC')" style="color:#a855f7; font-weight:bold;">RLC</button>
+            </div>
+
+            <div id="load-container" class="load-inputs-container grid-1">
+                
+                <div id="field-R" class="load-field active">
+                    <label style="font-size:0.7rem; color:#3b82f6;">Resistance (Ω)</label>
+                    <input type="number" id="load-R" value="50" oninput="update()">
+                </div>
+
+                <div id="field-L" class="load-field">
+                    <label style="font-size:0.7rem; color:#ef4444;">Inductance (mH)</label>
+                    <input type="number" id="load-L" value="100" oninput="update()">
+                </div>
+
+                <div id="field-C" class="load-field">
+                    <label style="font-size:0.7rem; color:#eab308;">Capacitance (µF)</label>
+                    <input type="number" id="load-C" value="100" oninput="update()">
+                </div>
+
+            </div>
+            
+            <div style="border-top:1px solid #333; margin:15px 0;"></div>
+
+            <div class="res-row">
+                <span>Impedance (Z)</span>
+                <span class="res-val" id="res-z">0 Ω</span>
+            </div>
+            <div class="res-row">
+                <span>Output Voltage</span>
+                <span class="res-val" style="color:#eab308" id="res-v">0 V</span>
+            </div>
+            <div class="res-row">
+                <span>Output Current</span>
+                <span class="res-val" style="color:#3b82f6" id="res-i">0 A</span>
+            </div>
+            <div class="res-row">
+                <span>Power Factor</span>
+                <span class="res-val" id="res-pf">1.00</span>
+            </div>
+            <div class="res-row">
+                <span>Active Power (P)</span>
+                <span class="res-val" id="res-p">0 W</span>
+            </div>
+            <div class="res-row">
+                <span>Reactive Power (Q)</span>
+                <span class="res-val" id="res-q">0 VAR</span>
+            </div>
+        </div>
+
+        <div class="bottom-area">
+            <div class="scope-container">
+                <div class="scope-controls">
+                    <button class="icon-btn" id="pause-btn" onclick="togglePause()" title="Pause/Play">❚❚</button>
+                    <div style="width:1px; height:20px; background:#333; margin:0 5px;"></div>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                         <span style="font-size:0.75rem; color:#888;">Time</span>
+                         <input type="range" min="1" max="100" value="30" oninput="timeScale = this.value / 1000">
+                    </div>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                         <span style="font-size:0.75rem; color:#888;">Amp</span>
+                         <input type="range" min="10" max="100" value="35" oninput="ampScale = this.value / 100">
+                    </div>
+                </div>
+                <canvas id="scope" style="width:100%; height:100%;"></canvas>
+            </div>
+            <div class="phasor-container">
+                <div class="phasor-title">PHASOR DIAGRAM</div>
+                <canvas id="phasor" width="240" height="240"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // STATE VARIABLES
+        let appMode = '1ph'; 
+        let currentLoadType = 'R'; 
+        let time = 0;
+        let scopePhaseOffset = 0; 
+        let isPaused = false;
+        let timeScale = 0.03; 
+        let ampScale = 0.35;  
+
+        // REFERENCES
+        const drawingLayer = document.getElementById('drawing-layer');
+        const canvasScope = document.getElementById('scope');
+        const ctxScope = canvasScope.getContext('2d');
+        const canvasPhasor = document.getElementById('phasor');
+        const ctxPhasor = canvasPhasor.getContext('2d');
+
+        // --- UI LOGIC ---
+        function startApp(mode) {
+            appMode = mode;
+            document.getElementById('launcher').classList.add('hidden');
+            document.getElementById('app-container').classList.add('visible');
+            
+            if(mode === '3ph') {
+                document.getElementById('app-title').innerText = "3 PHASE MODE";
+                document.getElementById('app-title').style.color = "#eab308";
+                document.getElementById('v-label').innerText = "Line Voltage (VL)";
+            } else {
+                document.getElementById('app-title').innerText = "SINGLE PHASE MODE";
+                document.getElementById('app-title').style.color = "#3b82f6";
+                document.getElementById('v-label').innerText = "Input Voltage (Vp)";
+            }
+
+            // Initial load set. This calls update(), which draws both core AND coils.
+            setLoad('R'); 
+            
+            // NOTE: We do NOT call drawStaticComponents() here anymore, 
+            // because setLoad() -> update() -> drawStaticComponents() sequence
+            // already handles it correctly. Calling it again would wipe the coils.
+            
+            resizeCanvas(); 
+        }
+
+        function goBack() {
+            document.getElementById('launcher').classList.remove('hidden');
+            document.getElementById('app-container').classList.remove('visible');
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pause-btn').innerHTML = isPaused ? "▶" : "❚❚";
+            document.getElementById('pause-btn').classList.toggle('active', isPaused);
+        }
+
+        function setLoad(type) {
+            currentLoadType = type;
+            
+            ['R','L','C','RLC'].forEach(t => {
+                const btn = document.getElementById('btn-'+t);
+                btn.style.background = '#333';
+                btn.style.color = '#888';
+                if(t === 'RLC') btn.style.color = '#a855f7';
+            });
+
+            const activeBtn = document.getElementById('btn-'+type);
+            activeBtn.style.background = (type === 'RLC') ? '#a855f7' : '#3b82f6';
+            activeBtn.style.color = '#fff';
+
+            const container = document.getElementById('load-container');
+            const fieldR = document.getElementById('field-R');
+            const fieldL = document.getElementById('field-L');
+            const fieldC = document.getElementById('field-C');
+
+            fieldR.classList.remove('active');
+            fieldL.classList.remove('active');
+            fieldC.classList.remove('active');
+
+            const sysInfo = document.getElementById('system-info');
+
+            if(type === 'R') {
+                container.className = "load-inputs-container grid-1";
+                fieldR.classList.add('active');
+                sysInfo.innerText = "Pure Resistive Load active.";
+            } else if(type === 'L') {
+                container.className = "load-inputs-container grid-1";
+                fieldL.classList.add('active');
+                sysInfo.innerText = "Pure Inductive Load active.";
+            } else if(type === 'C') {
+                container.className = "load-inputs-container grid-1";
+                fieldC.classList.add('active');
+                sysInfo.innerText = "Pure Capacitive Load active.";
+            } else if(type === 'RLC') {
+                container.className = "load-inputs-container grid-3";
+                fieldR.classList.add('active');
+                fieldL.classList.add('active');
+                fieldC.classList.add('active');
+                sysInfo.innerText = "Series R-L-C Circuit active.";
+            }
+            update();
+        }
+
+        // --- MATH & DRAWING ---
+        function drawStaticComponents() {
+            drawingLayer.innerHTML = ''; // This clears coils too!
+            
+            if(appMode === '1ph') {
+                // Core
+                drawingLayer.innerHTML += `<rect x="250" y="50" width="300" height="300" rx="10" fill="none" stroke="url(#metal-grad)" stroke-width="40" />`;
+            } else {
+                // 3PH Core
+                let p = `<path d="M 150 50 H 650 V 100 H 150 Z" fill="url(#metal-grad)" />`; 
+                p += `<path d="M 150 300 H 650 V 350 H 150 Z" fill="url(#metal-grad)" />`;
+                p += `<rect x="200" y="100" width="60" height="200" fill="url(#metal-grad)" />`; 
+                p += `<rect x="370" y="100" width="60" height="200" fill="url(#metal-grad)" />`; 
+                p += `<rect x="540" y="100" width="60" height="200" fill="url(#metal-grad)" />`; 
+                drawingLayer.innerHTML += p;
+                
+                // Labels
+                drawingLayer.innerHTML += `<text x="230" y="40" fill="#ef4444" font-weight="bold" text-anchor="middle">R</text>`;
+                drawingLayer.innerHTML += `<text x="400" y="40" fill="#eab308" font-weight="bold" text-anchor="middle">S</text>`;
+                drawingLayer.innerHTML += `<text x="570" y="40" fill="#3b82f6" font-weight="bold" text-anchor="middle">T</text>`;
+            }
+        }
+
+        function drawCoil(x, y, w, h, turns, color) {
+            let visTurns = Math.min(Math.floor(Math.sqrt(turns)), 20);
+            if(visTurns < 5) visTurns = 5;
+            const step = h / visTurns;
+            let d = "";
+            for(let i=0; i<visTurns; i++) {
+                let cy = y + (i*step);
+                d += `M ${x} ${cy} C ${x+w} ${cy+step*0.2}, ${x+w} ${cy+step*0.8}, ${x} ${cy+step} `;
+            }
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", d);
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke", color);
+            path.setAttribute("stroke-width", "4"); // Thicker for visibility
+            path.setAttribute("stroke-linecap", "round");
+            drawingLayer.appendChild(path);
+        }
+
+        function update() {
+            const Vp = parseFloat(document.getElementById('Vp').value) || 0;
+            const freq = parseFloat(document.getElementById('freq').value) || 50;
+            const Np = parseFloat(document.getElementById('Np').value) || 1;
+            const Ns = parseFloat(document.getElementById('Ns').value) || 1;
+            
+            const ratio = Np / Ns;
+            const Vs = Vp / ratio;
+            const omega = 2 * Math.PI * freq;
+
+            let R = 0, L_val = 0, C_val = 0;
+            
+            if(currentLoadType === 'R') {
+                R = parseFloat(document.getElementById('load-R').value) || 0;
+            } else if(currentLoadType === 'L') {
+                L_val = parseFloat(document.getElementById('load-L').value) || 0;
+            } else if(currentLoadType === 'C') {
+                C_val = parseFloat(document.getElementById('load-C').value) || 0;
+            } else if(currentLoadType === 'RLC') {
+                R = parseFloat(document.getElementById('load-R').value) || 0;
+                L_val = parseFloat(document.getElementById('load-L').value) || 0;
+                C_val = parseFloat(document.getElementById('load-C').value) || 0;
+            }
+
+            const XL = omega * (L_val / 1000); 
+            const XC = (C_val > 0 && (currentLoadType === 'C' || currentLoadType === 'RLC')) ? 1 / (omega * (C_val / 1000000)) : 0;
+            
+            const X_total = XL - XC;
+            const Z = Math.sqrt(R*R + X_total*X_total);
+            
+            const Is = (Z > 0.001) ? Vs / Z : 0;
+            
+            let phiRad = 0;
+            if(Z > 0.001) {
+                phiRad = Math.atan2(X_total, R); 
+            }
+            
+            const pf = Math.cos(phiRad);
+
+            let S, P, Q;
+            if(appMode === '3ph') {
+                S = Math.sqrt(3) * Vs * Is;
+            } else {
+                S = Vs * Is;
+            }
+            P = S * pf;
+            Q = S * Math.sin(phiRad);
+            
+            scopePhaseOffset = -phiRad; 
+
+            // Update Results
+            document.getElementById('res-z').innerText = Z.toFixed(2) + " Ω";
+            document.getElementById('res-v').innerText = Vs.toFixed(1) + " V";
+            document.getElementById('res-i').innerText = Is.toFixed(2) + " A";
+            
+            let pfText = pf.toFixed(3);
+            if(Is > 0.01) {
+                if(X_total > 0.1) pfText += " (Lag)";
+                else if(X_total < -0.1) pfText += " (Lead)";
+            }
+            document.getElementById('res-pf').innerText = pfText;
+            document.getElementById('res-p').innerText = Math.abs(P).toFixed(1) + " W";
+            document.getElementById('res-q').innerText = Math.abs(Q).toFixed(1) + " VAR";
+
+            // --- REDRAW SCENE (CORE + COILS) ---
+            drawStaticComponents(); // Clears everything and draws Core
+            
+            if(appMode === '1ph') {
+                // Draw Coils AFTER clearing
+                drawCoil(230, 80, 40, 240, Np, "#3b82f6"); 
+                drawCoil(530, 80, 40, 240, Ns, "#eab308"); 
+            } else {
+                drawCoil(190, 110, 80, 180, Np, "#ef4444"); drawCoil(210, 120, 40, 160, Ns, "#ffaaaa"); 
+                drawCoil(360, 110, 80, 180, Np, "#eab308"); drawCoil(380, 120, 40, 160, Ns, "#fde047"); 
+                drawCoil(530, 110, 80, 180, Np, "#3b82f6"); drawCoil(550, 120, 40, 160, Ns, "#93c5fd"); 
+            }
+        }
+
+        // --- SCOPE & PHASOR ---
+        function resizeCanvas() {
+            const c = document.querySelector('.scope-container');
+            canvasScope.width = c.offsetWidth;
+            canvasScope.height = c.offsetHeight - 40; 
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawLoop() {
+            requestAnimationFrame(drawLoop);
+            
+            ctxScope.fillStyle = "#050505";
+            ctxScope.fillRect(0,0, canvasScope.width, canvasScope.height);
+            ctxScope.strokeStyle = "#222"; ctxScope.lineWidth = 1; ctxScope.beginPath();
+            for(let x=0; x<canvasScope.width; x+=50) { ctxScope.moveTo(x,0); ctxScope.lineTo(x,canvasScope.height); }
+            for(let y=0; y<canvasScope.height; y+=50) { ctxScope.moveTo(0,y); ctxScope.lineTo(canvasScope.width,y); }
+            ctxScope.stroke();
+            
+            const mid = canvasScope.height / 2;
+            const amp = canvasScope.height * ampScale; 
+            
+            if(appMode === '1ph') {
+                drawWave(ctxScope, mid, amp, 0, "#eab308", 2); 
+                drawWave(ctxScope, mid, amp*0.7, scopePhaseOffset, "#3b82f6", 2); 
+            } else {
+                drawWave(ctxScope, mid, amp, 0, "#ef4444", 2);             
+                drawWave(ctxScope, mid, amp, (120*Math.PI/180), "#eab308", 2); 
+                drawWave(ctxScope, mid, amp, (240*Math.PI/180), "#3b82f6", 2); 
+            }
+            drawPhasor();
+            if(!isPaused) time += 5; 
+        }
+
+        function drawWave(ctx, mid, amp, phase, color, width) {
+            ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = width;
+            for(let x=0; x<canvasScope.width; x++) {
+                const angle = (x * timeScale) - (time * 0.02) + phase;
+                const y = mid + amp * Math.sin(angle);
+                if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+            }
+            ctx.stroke();
+        }
+
+        function drawPhasor() {
+            const w = canvasPhasor.width; const h = canvasPhasor.height;
+            const cx = w/2; const cy = h/2; const radius = w * 0.35;
+            ctxPhasor.fillStyle = "#0a0a0a"; ctxPhasor.fillRect(0,0, w, h);
+            ctxPhasor.strokeStyle = "#333"; ctxPhasor.beginPath(); ctxPhasor.arc(cx, cy, radius, 0, 2*Math.PI); ctxPhasor.stroke();
+            ctxPhasor.strokeStyle = "#222"; ctxPhasor.beginPath(); ctxPhasor.moveTo(cx, 0); ctxPhasor.lineTo(cx, h); ctxPhasor.moveTo(0, cy); ctxPhasor.lineTo(w, cy); ctxPhasor.stroke();
+
+            if(appMode === '1ph') {
+                drawVector(cx, cy, radius, 0, "#eab308", "V");
+                let vectorAngle = -scopePhaseOffset; 
+                drawVector(cx, cy, radius * 0.7, vectorAngle, "#3b82f6", "I");
+                if(Math.abs(vectorAngle) > 0.05) {
+                    ctxPhasor.beginPath(); ctxPhasor.strokeStyle = "#555";
+                    ctxPhasor.arc(cx, cy, radius*0.3, 0, vectorAngle, vectorAngle < 0); ctxPhasor.stroke();
+                    let deg = (vectorAngle * 180 / Math.PI).toFixed(0);
+                    ctxPhasor.fillStyle = "#888"; ctxPhasor.font = "10px sans-serif";
+                    ctxPhasor.fillText(Math.abs(deg)+"°", cx + 20, cy + (vectorAngle > 0 ? 15 : -15));
+                }
+            } else {
+                drawVector(cx, cy, radius, 0, "#ef4444", "R");
+                drawVector(cx, cy, radius, (2*Math.PI/3), "#eab308", "S");
+                drawVector(cx, cy, radius, (4*Math.PI/3), "#3b82f6", "T");
+            }
+        }
+
+        function drawVector(cx, cy, len, angleRad, color, label) {
+            const ex = cx + len * Math.cos(angleRad); const ey = cy + len * Math.sin(angleRad); 
+            ctxPhasor.strokeStyle = color; ctxPhasor.lineWidth = 2; ctxPhasor.beginPath(); ctxPhasor.moveTo(cx, cy); ctxPhasor.lineTo(ex, ey); ctxPhasor.stroke();
+            const headLen = 8; const headAngle = Math.atan2(ey-cy, ex-cx);
+            ctxPhasor.beginPath(); ctxPhasor.moveTo(ex, ey);
+            ctxPhasor.lineTo(ex - headLen * Math.cos(headAngle - Math.PI/6), ey - headLen * Math.sin(headAngle - Math.PI/6));
+            ctxPhasor.lineTo(ex - headLen * Math.cos(headAngle + Math.PI/6), ey - headLen * Math.sin(headAngle + Math.PI/6));
+            ctxPhasor.fillStyle = color; ctxPhasor.fill();
+            ctxPhasor.fillStyle = "#fff"; ctxPhasor.font = "12px sans-serif";
+            const lx = cx + (len+15) * Math.cos(angleRad); const ly = cy + (len+15) * Math.sin(angleRad);
+            ctxPhasor.fillText(label, lx-4, ly+4);
+        }
+
+        resizeCanvas();
+        drawLoop();
+    </script>
+</body>
+</html>
